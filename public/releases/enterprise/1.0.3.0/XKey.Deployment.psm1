@@ -79,8 +79,16 @@ function Get-XKeyPrerequisiteErrors {
     if (!$machine -or $machine['PROCESSOR_ARCHITECTURE'] -ne 'AMD64') { $errors.Add('Windows x64 is required; ARM64 and Windows x86 are not supported.') }
     $net = Read-XKeyRegistry 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full'
     if (!$net -or [int]$net['Release'] -lt 528040) { $errors.Add('.NET Framework 4.8 or newer is required.') }
-    $vsto = Read-XKeyRegistry 'SOFTWARE\Microsoft\VSTO Runtime Setup\v4R'
-    if (!$vsto -or !$vsto['Version']) { $errors.Add('Machine-wide VSTO Runtime is required.') }
+    # Runtime registration can be in the 32-bit view even for the x64 runtime.
+    # Office-provided and redistributable installations use different subkeys.
+    $vstoFound = $false
+    foreach ($view in @('Registry32','Registry64')) {
+        foreach ($key in @('v4R','v4')) {
+            $vsto = Read-XKeyRegistry "SOFTWARE\Microsoft\VSTO Runtime Setup\$key" $view
+            if ($vsto -and $vsto['Version']) { $vstoFound = $true }
+        }
+    }
+    if (!$vstoFound) { $errors.Add('Machine-wide VSTO Runtime is required.') }
     $ppt32 = Read-XKeyRegistry 'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\POWERPNT.EXE' Registry32
     $ppt64 = Read-XKeyRegistry 'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\POWERPNT.EXE' Registry64
     if ((!$ppt32 -or !(Test-Path -LiteralPath ([string]$ppt32['']))) -and (!$ppt64 -or !(Test-Path -LiteralPath ([string]$ppt64[''])))) { $errors.Add('Desktop PowerPoint is required.') }
@@ -128,8 +136,8 @@ Export-ModuleMember -Function *-XKey*
 # SIG # Begin signature block
 # MIImpwYJKoZIhvcNAQcCoIImmDCCJpQCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBalZMFAvZ7k66j
-# /5/fCsfRd1J0RDmnyiHM0YIzQp+nnKCCIDcwggWNMIIEdaADAgECAhAOmxiO+dAt
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDPP36AJjGb4f6d
+# uawFzrBY6k0B33R5upFP/BwHjb4DmKCCIDcwggWNMIIEdaADAgECAhAOmxiO+dAt
 # 5+/bUOIIQBhaMA0GCSqGSIb3DQEBDAUAMGUxCzAJBgNVBAYTAlVTMRUwEwYDVQQK
 # EwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAiBgNV
 # BAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBDQTAeFw0yMjA4MDEwMDAwMDBa
@@ -306,31 +314,31 @@ Export-ModuleMember -Function *-XKey*
 # bSBDb2RlIFNpZ25pbmcgMjAyMSBDQQIQUZ62GNEPcCBOFx7t9ALUBTANBglghkgB
 # ZQMEAgEFAKCBhDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJ
 # AzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMC8G
-# CSqGSIb3DQEJBDEiBCC6n76S3urNl4DCIRc8uzm0vBBwFqrG+tdBwJ8I11K4eDAN
-# BgkqhkiG9w0BAQEFAASCAYABGR5b4SsZ6fV5AVoE3lNioC/V95HEdYMC6OwAxFcO
-# RK/rgBwMufOIziMO4sKV9RI+7DFF2Ln1Xgc8hOG1/BTSJ+rdUPCbpZ7YdYnC8kZT
-# 32beU0CO8ObV9SIj9FvN50kZIFouP/2oRB5XZ4lpXY7iR+Xi9GP8U/6TpN7mVV54
-# XBoul3Tw+geCJCNmBjr9jF3owBfxlxH229hVygxUFO19LXGEgA9vL3HNoMfOuFb5
-# R+iN4mkYfOq1kDjLMbPboQXes3n0i46JKl98fMzed58j7xAfA2ao9L4WyigdZK3h
-# kAit6wEBYzFrAJ90HgfRt8xIAg4zCPjEEnYuOs6nRjyXvLyWIoLwR6u/TQjzQ9o1
-# pjYTRcEC6Rp+DjSRO7YWiaRW28z3y8SD2leRbQwcAmxeCoOZumbuG5doTRHhotV4
-# SES6uKfb7ZmhFypNkRHWMGsjIrFY7dR0laPp726Btz/togppYCzNlAFTvAsU0Eib
-# ZD/Rh+GkqZMFMU34Tnb3JAihggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEw
+# CSqGSIb3DQEJBDEiBCDVZmk99TxtkUnIpCTLOLQDhgeLLDHOcBjHnpWoDNA7IjAN
+# BgkqhkiG9w0BAQEFAASCAYB/YyFjFB6WP0AVqmDqtC8mMJ+13IArflEd/Cx5DiVE
+# 8jfXABBTl4EiGvmC9MG9VBX+wQ4mxXstQvPTX4g8NIE51XP6YkXi7/s443Dv++mp
+# JqKf2ZPlzy9xjiCYy/8QkWV+F7ubXMCIqqB5hmp6+kDw7ce4gT8O3SGQxSjR6svv
+# 4IJpNV5SpTZlgdAX23DyaFjCQPoAfG5nue9tDvQED9KS/x9orIz8K74RAz35gc0X
+# Z9K+oI5ZqfNvVfcYjBpqiPfL9zrwpq2OXY1q7TrYKfnV/A2A3yK4XoWRUhxTfpt+
+# IzdHUJxfgMvw1G649AprpGtcKHGx47ZWibMuzESNwJf0yciF6QRKraNGxo0/szLO
+# u3Dz7hCTn5cBp55dBMFKsSY2jffD67FY4WCWrybLG7kGbqE86cms2xDQWBK6yk5a
+# Q9wlvi6r6GJfyJX8EJ0oQWo5reHrHqu+YICzEAoAwfjI9azBbxKnSiykcGyksPjX
+# GBXYyXdhIzAfnc8fCiP64MKhggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEw
 # fTBpMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNV
 # BAMTOERpZ2lDZXJ0IFRydXN0ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hB
 # MjU2IDIwMjUgQ0ExAhAIT9wzT35FTtvDD4/5khg1MA0GCWCGSAFlAwQCAQUAoGkw
 # GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDIw
-# MTE0ODQxWjAvBgkqhkiG9w0BCQQxIgQgFiyue64ITsFwTdxMmmhjcJJf1VeUhSS+
-# F0NpIsFQLcEwDQYJKoZIhvcNAQEBBQAEggIArI7V1NoHSGDS993Ieqpp+z7QZEMu
-# BewpIQzsGtHccUh4LQYXfAYYpeQ4XSm5EUat46AgYro9N65+7I5R0XqYZGttlg0F
-# JmZGNSFJ4aEYQL9n0XTc3LeHmM2GCH4WGsOzdSNuTSCOYiuSGu5GpOfbPLG1a+so
-# pL8Kj59CgtJb//O4hI/b/PYKQFx68EYRpisVY1hL6BrwK/q8nH/BfKFPBspsZHfu
-# Rz1cJW4aqIVyefuRvrx1/3FvRkaVmJjCNL3yTE/LR8f+N5s+CMOSkt2yN+xqAkMh
-# 8PJgA9OvEnp4jkaNDog39P4ybqYvNR1015jAzlV6BKTiZYsrami/UrvmTyf+6j19
-# jdhijR2FUGLVqOEsU9FoXt5+M53AWIbJD/tI5EKRTNKDiGeUtgHQskzH6wam813j
-# 7NVkoJ+hZD2mgYbcDsMFo+W2s5CXOoTozJJhhzxLb9ulJICyCipDz6LH+spnVpop
-# S+KHdkbN4MRJ4L3U/6J5xVy0l/lXfR2HTGet08Lrl1uSClQcvQ/hbzDKZsGqinoe
-# xfWjDMcijdTqq9wZbT4uVd345MXpYo9tqncLsZVTQO5iWXQz5ZlEQJO8Z+dA/LbI
-# CFhBS7MO8ABbPyetIlgPpOYyTJxYRHvJQ7AzohMDETmEdbjR41esozV5jLH4iLDs
-# FIKw8L5MVq7KPUI=
+# MTM0MzUyWjAvBgkqhkiG9w0BCQQxIgQga9yWXZqpmcz8soFXAamz0EJN/V5rujsp
+# uQhA6oxwAqAwDQYJKoZIhvcNAQEBBQAEggIAsT14tqszbK7TCKrnKbYl31k+TUzo
+# BNNJZtMZmh/YlyGA4em9T+mfwwPJaXGQKBdaKJltWZ9oaj+iCenf27K7ThHPI12t
+# onGtpwGeAPM7DY30iLm/0g206g007Gma4tbaECgLC9ToQBL5k10zTsQx1XYNKWG/
+# 6Oh4uPNYC/3Qj87tOVlfWLbzA5Oj94w8H63blN4jKLOZyS1LetpIvjizUlZrLHnQ
+# n0gfHI3s5YIoWch4Kadm8LEAJzsPHu22ifXE0Am/LglnuIuJS2n88Tod8wzGwmqF
+# RI0eCPiygc4s5/mNXDLJaMY8CDb2Y50JCRzH3lw5RO8FIozwISURlznToO4kH0Mm
+# k63Rjfs7A8Oyc+yT/zIONy6eVoVrdqOIovmt8XCLZiCPhBBBftGDqOumtgK60Nuf
+# mc3Ix236MAuoGwvf1wmVqiwikM6Rju5k+RuSo9bLWLi6zNQkbwVTdxQsEpiD0n0+
+# dO/2CrQjMYuwbXy81MyWGgn0yb/ZJPcOAg0WQErlOwBHk71fU2BMulcwucepDqeM
+# K1WYAlWlv5AyHRz46JZ+1E1LED3mPHNNSBbPi29hdn1gC5y5p91LAwogj/J/YFlA
+# yiBuwBSkkaZhD3SOrzcWSvb1TEN9bF4FKo5iGOWLpocNMri9Q3fH0/hjaBQMVfPp
+# adhk6hPBYmsSz7c=
 # SIG # End signature block

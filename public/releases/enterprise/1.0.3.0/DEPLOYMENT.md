@@ -30,6 +30,8 @@ Return codes: 0 success; 3010 soft reboot; 1618 retry. Other codes indicate fail
 
 The direct MSI also supports `msiexec /i XKey-1.0.3-x64.msi /qn /norestart /L*v install.log`. The wrapper adds version-aware skip, strict prerequisite checks, signature/checksum verification and post-install detection.
 
+The 1.0.3.0 prerelease was reissued with corrected VSTO and WebView2 prerequisite searches. Its application binaries and ClickOnce deployment are unchanged. Download the replacement MSI or Intune package and verify the current checksums. An already installed healthy 1.0.3.0 MSI is skipped by the wrapper; it does not need an application update for these prerequisite-only corrections. Existing Intune app content must be replaced or imported as a new app by IT; publishing a replacement download does not update uploaded Intune content automatically.
+
 ## Testing without an existing Intune subscription
 
 The MSI can be installed independently of Intune. First test it on a disposable Windows VM with the supported PowerPoint version and prerequisites. Test silent installation, first launch as a standard user, repair, upgrade, removal and settings preservation. A manual administrator install does not establish that installation as SYSTEM, detection, retry handling or Intune supersedence works.
