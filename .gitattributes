@@ -1,3 +1,5 @@
 *.vsto -text
 *.manifest -text
 *.deploy -text -whitespace
+# Preserve exact signed ClickOnce bytes.
+public/releases/** -text

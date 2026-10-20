@@ -1,5 +1,5 @@
 {
-  "name": "xkey-resources-next",
+  "name": "xkey-releases",
   "version": "0.0.1",
   "description": "Resources for XKey",
   "scripts": {
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/azure06/xkey-resources-next.git"
+    "url": "git+https://github.com/azure06/xkey-releases.git"
   },
   "author": "Gabriele Sato",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/azure06/xkey-resources-next/issues"
+    "url": "https://github.com/azure06/xkey-releases/issues"
   },
-  "homepage": "https://github.com/azure06/xkey-resources-next#readme",
+  "homepage": "https://github.com/azure06/xkey-releases#readme",
   "dependencies": {
     "next": "^13.0.6",
     "nextra": "latest",
