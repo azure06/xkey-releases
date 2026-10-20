@@ -1,3 +1,5 @@
 *.vsto -text
 *.manifest -text
 *.deploy -text -whitespace
+# Signed installers and deployment scripts require exact published bytes.
+public/releases/** -text
