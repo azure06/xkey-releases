@@ -1,6 +1,5 @@
 *.vsto -text
 *.manifest -text
 *.deploy -text -whitespace
-# Signed installers and deployment scripts require exact published bytes.
+# Preserve exact signed ClickOnce bytes.
 public/releases/** -text
-public/updates/standalone/*.json -text

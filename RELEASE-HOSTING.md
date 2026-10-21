@@ -1,70 +1,19 @@
-# XKey desktop release hosting
+# XKey releases and legacy ClickOnce hosting
 
-The existing resources site serves public desktop downloads. No update API,
-database or customer credentials are needed. Signed Standalone preview packages include the independent updater. Keep
-stable/latest promotion separate from preview endpoint publication.
+This public repository is azure06/xkey-releases. Application source stays private in azure06/XKey. Download Standalone and Intune packages from [GitHub Releases](https://github.com/azure06/xkey-releases/releases).
 
-| Repository location | Public endpoint | Purpose |
-| --- | --- | --- |
-| `public/releases/enterprise/1.0.4.0/` | `/releases/enterprise/1.0.4.0/...` | IT-managed MSI, Intune scripts and upload container |
-| `public/releases/standalone/1.0.4.0/` | `/releases/standalone/1.0.4.0/...` | Immutable signed Standalone MSI and release evidence |
-| `public/updates/standalone/preview.json` | `/updates/standalone/preview.json` | Mutable preview update manifest |
-| `public/updates/standalone/stable.json` | `/updates/standalone/stable.json` | Mutable stable update manifest |
+## GitHub releases
 
-The canonical origin is `https://resources.infiniticlips.com`. Serve files
-directly over HTTPS without authentication, HTML fallback or redirects. The
-updater only accepts MSI URLs on the feed's origin, using the exact path
-`/releases/standalone/<four-field-version>/XKey-<three-field-version>-Standalone-x64.msi`.
-The JSON feed is at most 64 KiB and the installer at most 512 MiB.
+Every release carries the signed Standalone MSI, Intune MSI/ZIP/.intunewin, release-manifest.json, SHA256SUMS.txt, validation-report.json and deployment/runtime configuration guides. Standalone discovers releases and downloads assets directly from GitHub. No MSI packages or updater JSON feeds are served by this website.
 
-The site configuration disables caching for the two mutable feeds and allows
-long-lived caching for immutable Standalone artifacts. Never replace an existing
-version's published MSI, even if only its signature or documentation changed.
-Signed files under `public/releases` must remain byte-identical; `.gitattributes`
-already disables text conversion there.
+Stable follows the GitHub Latest published full release. Preview follows the highest published valid application version, including prereleases and full releases. Promote a tested prerelease by clearing prerelease and marking it Latest in GitHub's GUI. Reuse the same assets; never overwrite published versioned packages. Rollback means withdrawing an offer or issuing a forward fix, not forcing installed clients to downgrade.
 
-## Deliberate promotion
+XKey 1.0.5.0 is the GitHub-only cutover. Existing test installations on older versions require one manual MSI installation. The previous website-hosted Standalone/enterprise directories and feeds are removed with normal Git commits; history is preserved. No fallback or transition feed remains.
 
-1. Build and validate signed packages from the intended application source.
-2. Stage the versioned packages and review their hashes and release metadata.
-   Keep existing ClickOnce installation URLs and promote preview first.
-3. Complete VM acceptance and endpoint smoke checks. An Intune pilot is a
-   separate gate; the Intune MSI contains no self-updater.
-4. Only when standalone updating has passed acceptance, copy the validated
-   build's `standalone/update-manifest.json` to the selected feed path. The
-   build does not publish or promote the feed automatically.
-5. After publication, GET the feed with HTTP 200 and JSON content, then download
-   its MSI and verify its exact size, SHA256, timestamped publisher signature and
-   Standalone MSI identity. Check Cache-Control headers from the canonical host.
+## ClickOnce and documentation
 
-Keep preview and stable independent. Roll back a feed pointer to withdraw an
-offer without modifying the immutable MSI. Installed clients never downgrade
-merely because the feed points to an older version.
+Existing public/releases/preview and public/releases/latest content and the resources.infiniticlips.com ClickOnce URLs remain unchanged. The Next.js site continues serving documentation and legacy ClickOnce. Publishing/promoting a GitHub release does not deploy or promote ClickOnce.
 
-Stage in the desktop release tooling deliberately places the signed versioned
-packages and promotes only the preview feed. Builds alone never publish a feed.
-GitHub prereleases carry the same signed packages for manual downloads; the
-updater downloads from this site to avoid GitHub asset redirects.
+The private application repository supplies Build, Validate, Publish and StageClickOnce commands. StageClickOnce copies only ClickOnce after validation; it does not commit, push or publish GitHub assets. Local checkout folders may retain the old xkey-resources-next name even though origin points to xkey-releases.
 
-## Local hosting check
-
-Restore with `pnpm@8.15.9 install --frozen-lockfile --ignore-scripts`, then run
-the site's build. Use the documented pnpm lockfile: the separate npm lockfile
-currently resolves a different, incompatible Nextra major. Keep lockfile and
-website framework migration separate from preparing desktop release files.
-
-From the XKey checkout, run `tests/Test-ReleaseHosting.ps1` with
-`-ResourcesRepoPath` pointing here and `-ReleaseDirectory` pointing to the
-validated candidate. The test starts a loopback production server, temporarily
-places the candidate feed and MSI only at absent paths, checks HTTP status,
-content type, caching and downloaded hash/size, and removes its temporary files.
-It refuses to overwrite any existing public artifact. A passing local test still
-requires canonical-host HTTPS smoke checks after deliberate publication.
-
-## Withdrawn preview replacement
-
-The owner withdrew the GitHub releases and authorized restarting at 1.0.3.0, replacing the existing resources preview. This is an explicit exception to version immutability for this private preview. Existing 1.0.3.0 testers must download the replacement GitHub MSI and install it manually once; equal versions do not trigger an offer. Uninstall withdrawn 1.0.4.0/1.0.5.0 before installing 1.0.3.0. Future public versions must increase normally. Production and Stable remain the fresh-install defaults; Preview is manually configured.
-
-## Current Preview upgrade test
-
-1.0.4.0 is published after the corrected 1.0.3.0 baseline to exercise Standalone auto-updating. Both versioned packages remain available. Only the Preview feed and Preview ClickOnce deployment advance; Stable/latest are unchanged. The updater reads the JSON and downloads its MSI here. GitHub Releases carries matching manual downloads and verification evidence, not the update feed.
+Use the existing frozen pnpm lockfile for site builds. Keep framework upgrades separate. Verify ClickOnce hashes and live URLs when deploying site cleanup.
