@@ -1,52 +1,43 @@
-# XKey releases
+# XKey installation and deployment
 
-Public downloads and documentation for **XKey for Microsoft PowerPoint**. Application source is maintained separately in a private repository.
+Guides and downloads for **XKey for Microsoft PowerPoint**.
 
-[Download releases](https://github.com/azure06/xkey-releases/releases) · [Installation guide](https://resources.infiniticlips.com/installation) · [Report an issue](https://github.com/azure06/xkey-releases/issues)
+[English documentation](https://resources.infiniticlips.com) · [日本語ドキュメント](https://resources.infiniticlips.com/ja) · [Downloads](https://github.com/azure06/xkey-releases/releases)
 
-## Choose a package
+## Choose an installation option
 
-| Package | Who it is for | Updates |
+| Option | Intended use | How updates work |
 | --- | --- | --- |
-| **Standalone MSI** | Individuals and manual installations | Bundled updater; installation requires administrator approval |
-| **Intune MSI / ZIP / .intunewin** | Company IT and managed devices | IT-managed deployment; no self-updater |
-| **ClickOnce** | Existing installations | Legacy, separate update path and hosting |
+| **Standalone MSI** | Individuals who can approve administrator prompts | Bundled updater checks for newer versions and asks before installing |
+| **Intune package** | Organisations where IT manages software | IT deploys and approves updates through Intune; no self-updater |
+| **ClickOnce** | Existing ClickOnce installations | Uses its original ClickOnce installation and update channel |
 
-Standalone and Intune are alternative distributions of the same app and cannot coexist. Use the package matching your installation's management model.
+Standalone and Intune cannot coexist. Coordinate a change of installation type with your administrator. Avoid installing an MSI alongside an existing ClickOnce installation.
 
-**1.0.5.0 is the GitHub-only cutover.** Older Standalone test installations need one manual installation of the 1.0.5.0 Standalone MSI. Their old website update feed has been removed. Prereleases require explicit tester opt-in; fresh Standalone installs use Stable updates and the Production application backend.
+- [Installation and removal](https://resources.infiniticlips.com/installation)
+- [Updates](https://resources.infiniticlips.com/updates)
+- [Corporate deployment with Intune](https://resources.infiniticlips.com/enterprise)
 
-## Release files
+## Download files
 
 | File | Purpose |
 | --- | --- |
-| `XKey-<version>-Standalone-x64.msi` | Install XKey and its updater |
-| `XKey-<version>-Intune-x64.msi` | Machine-wide app installation controlled by IT |
-| `XKey-<version>-Intune-x64.intunewin` | Upload container for an Intune Win32 app; not a local installer |
+| `XKey-<version>-Standalone-x64.msi` | Installs XKey and its bundled updater |
+| `XKey-<version>-Intune-x64.msi` | Installs the IT-managed distribution |
+| `XKey-<version>-Intune-x64.intunewin` | Intune Win32 app upload container; not a local installer |
 | `XKey-<app-version>-Intune.zip` | Intune MSI, signed management scripts and supporting files |
-| `release-manifest.json` | Versions, source commit, package identities and artifact hashes |
-| `SHA256SUMS.txt` | Checksums for the published download set |
-| `validation-report.json` | Automated validation results and remaining acceptance boundaries |
-| `DEPLOYMENT.md` | IT prerequisites, installation, migration and detection instructions |
-| `runtime-configuration.md` | Manual backend and update-channel configuration |
+| `DEPLOYMENT.md` | Package-specific IT instructions |
+| `runtime-configuration.md` | Administrator and developer configuration |
+| `release-manifest.json`, `SHA256SUMS.txt` | Package identities and checksums |
+| `validation-report.json` | Automated check results and acceptance limitations |
 
-Read the guides attached to the release you install. Automated validation does not establish full Office lifecycle or Intune compatibility; those require a Windows/Office test and an Intune pilot.
+Choose the distribution you need from [GitHub Releases](https://github.com/azure06/xkey-releases/releases). Read the instructions supplied with that package. Prereleases are intended for testing.
 
-## How updates work
+## Maintaining this documentation
 
-- **Stable** follows GitHub's Latest published full release.
-- **Preview** selects the highest published valid application version, including prereleases.
-- Only newer versions are offered. Checks run on PowerPoint startup at most once every six hours per user and channel.
-- Accept the offer, leave the updater open and close all PowerPoint windows. Approve the administrator prompt to install. **Postpone cancels the current attempt.**
-- Release discovery and Standalone downloads use this public GitHub repository anonymously. No website-hosted MSI or updater feed remains.
+The website hosts English and Japanese guides and preserves existing ClickOnce files. GitHub Releases hosts Standalone and Intune downloads. Application source and packaging are maintained in a separate private repository.
 
-Promoting a tested prerelease to a full release and marking it Latest makes the same signed assets available to Stable clients. Published assets are immutable; fixes use a new version. See [release operations](RELEASE-HOSTING.md) and the [next-release test plan](NEXT-RELEASE-TEST.md).
-
-## This repository
-
-GitHub Releases hosts Standalone and Intune downloads. The website at [resources.infiniticlips.com](https://resources.infiniticlips.com) provides documentation and preserves existing ClickOnce URLs. Publishing a GitHub release does not deploy ClickOnce.
-
-For local documentation development, use pnpm 8.15.9 (recorded in package.json) with the checked-in lockfile. pnpm-lock.yaml is the dependency source; do not generate a second npm lockfile:
+Use pnpm 8.15.9, as recorded in package.json, with the checked-in pnpm lockfile:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -54,8 +45,8 @@ pnpm dev
 pnpm build
 ```
 
-Open http://localhost:3000 during development. Keep application packaging and framework upgrades separate from documentation edits. Do not modify signed ClickOnce files by hand.
+Open http://localhost:3000 during development. Update both languages together. Do not generate a second npm lockfile or edit signed ClickOnce files by hand. Maintainer procedures are in [RELEASE-HOSTING.md](RELEASE-HOSTING.md); the [updater test plan](NEXT-RELEASE-TEST.md) is separate from user documentation.
 
 ## License
 
-Repository content is covered by [LICENSE](LICENSE). Installing a published application package remains subject to the terms supplied with that application.
+See [LICENSE](LICENSE) for repository content. Application packages carry their own applicable terms.

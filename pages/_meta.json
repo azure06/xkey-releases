@@ -1,13 +1,9 @@
 {
-  "index": "Overview",
-  "installation": "Installation",
-  "updates": "Updates and testing",
-  "enterprise": "Enterprise deployment",
+  "index": "Choose an installation",
+  "installation": "Install and remove",
+  "updates": "Updates",
+  "enterprise": "Corporate / Intune",
   "about": { "title": "About", "type": "page" },
-  "releases": {
-    "title": "Downloads ↗",
-    "type": "page",
-    "href": "https://github.com/azure06/xkey-releases/releases",
-    "newWindow": true
-  }
+  "ja": { "title": "日本語", "type": "page" },
+  "releases": { "title": "Downloads ↗", "type": "page", "href": "https://github.com/azure06/xkey-releases/releases", "newWindow": true }
 }

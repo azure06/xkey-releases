@@ -1,25 +1,63 @@
-# Enterprise deployment
+# Corporate deployment with Intune
 
-Use the **Intune** distribution for IT-managed installations. It contains no Standalone self-updater: your IT team approves and deploys each version.
+[日本語](/ja/enterprise)
 
-## Release downloads
+Use the **Intune** distribution when IT controls installation and updates. It installs XKey machine-wide and contains no Standalone self-updater.
 
-Each [GitHub release](https://github.com/azure06/xkey-releases/releases) supplies an Intune MSI, an Intune ZIP containing signed management scripts, a `.intunewin` upload container, and a `DEPLOYMENT.md` guide. Use the files from the same release together.
+## Files to download
 
-The deployment guide is the authority for exact commands, runtime requirements, detection, return codes, migration and supersedence. Read it before importing the package.
+Get matching files from [GitHub Releases](https://github.com/azure06/xkey-releases/releases):
 
-## Rollout outline
+| File | Use |
+| --- | --- |
+| **Intune-x64.intunewin** | Upload as a Windows app (Win32) in Intune |
+| **Intune ZIP** | MSI, signed install/uninstall/detection/migration scripts and supporting files |
+| **Intune-x64.msi** | Direct installation or MSI inspection |
+| **DEPLOYMENT.md** | Exact package-specific requirements and commands |
 
-1. Install machine-wide prerequisites as separate managed dependencies.
-2. Identify existing MSI and per-user ClickOnce installations. Run ClickOnce migration in each affected user's context before assigning the machine installation.
-3. Import the `.intunewin` as a Windows Win32 app with System installation behavior.
-4. Configure the supplied install/uninstall commands and custom detection script from the release guide.
-5. Pilot on disposable devices before expanding the assignment. IT retains ownership of subsequent updates.
+The `.intunewin` is a transport container. Intune downloads its contents to managed devices and runs the commands IT configures. Users do not run this file directly.
 
-Standalone and Intune cannot coexist. Deliberately changing distribution requires administrator-controlled migration; do not use the Standalone updater to manage Intune installations.
+## Prepare devices
 
-## Validation status
+- Install desktop PowerPoint, .NET Framework 4.8+, VSTO Runtime and the required machine-wide WebView2 Evergreen Runtime. Check the package guide for its minimum runtime version.
+- Deploy prerequisites as separate Intune dependencies.
+- Identify existing MSI, Standalone and per-user ClickOnce installations before assignment. Standalone and Intune cannot coexist.
+- Run `Migrate-XKeyClickOnce.ps1` as **each affected Windows user**. It reports by default; use `-Remove` only after reviewing the confirmed XKey installation. Do not run user migration as SYSTEM. One user's successful migration does not cover other accounts.
 
-Automated package, signature and updater checks are recorded in each release's `validation-report.json`. They do not prove Office installation lifecycle behavior or Intune compatibility. A Windows/Office lifecycle test and a real Intune pilot remain separate acceptance checks.
+## Configure the Win32 app
 
-Directly running the MSI can validate a manual installation. It does not validate SYSTEM context, Intune detection, retry reporting or supersedence.
+Upload the supplied `.intunewin`, select **System** installation behavior and Windows x64 requirements, and use the supplied commands:
+
+Install:
+
+```text
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy AllSigned -File .\Install-XKey.ps1
+```
+
+Uninstall:
+
+```text
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy AllSigned -File .\Uninstall-XKey.ps1
+```
+
+Use the generated **Detect-XKey.ps1** as a custom detection script in 64-bit PowerShell, with signature checking enabled. Use the script from the package, not a source template. Detection checks the Intune distribution, version, files and registration and accepts equal or newer versions.
+
+Map **0** to success, **3010** to soft reboot and **1618** to retry. If PowerPoint is running, installation defers without closing presentations. IT may need to reschedule after the user closes PowerPoint; retries are finite.
+
+See [Microsoft's Win32 app setup instructions](https://learn.microsoft.com/en-us/mem/intune/apps/apps-win32-add) for the Intune configuration screens.
+
+## Deploy updates
+
+Pilot a newly versioned Intune package before wider assignment. Configure supersedence with **Uninstall previous version = No**: the new XKey MSI performs the upgrade. IT controls targeting and timing; a GitHub publication does not change an existing assignment.
+
+See [Microsoft's supersedence guide](https://learn.microsoft.com/en-us/mem/intune/apps/apps-win32-supersedence) for that setting. Do not change to Standalone while an Intune assignment still manages the device.
+
+## Logs and removal
+
+Management script logs are under `%ProgramData%\Infiniti\XKey\Logs`. Uninstall preserves user settings and application data. The wrapper succeeds when the managed app is already absent. Never use `Win32_Product` for detection.
+
+## Test before broad rollout
+
+Test silent SYSTEM installation, standard-user PowerPoint startup, detection, upgrade, repair, uninstall and settings preservation on disposable devices. Test both Office bitness configurations you intend to support. A direct administrator MSI installation does not validate Intune behavior.
+
+Review the package's `validation-report.json` for automated results and acceptance limits. Complete a real Intune pilot before a broad deployment. IT may need to approve the signing publisher under company policy; do not import the signing certificate into Trusted Root.

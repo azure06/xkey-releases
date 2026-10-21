@@ -1,35 +1,48 @@
-# Installation
+# Installation and removal
 
-Download the package from [XKey's GitHub Releases](https://github.com/azure06/xkey-releases/releases). Check the release notes and its attached deployment guide before installing a prerelease.
+[日本語](/ja/installation)
 
 ## Requirements
 
-The current test baseline is Windows 11 x64 with Microsoft 365 desktop PowerPoint, either 32-bit or 64-bit. Install these prerequisites machine-wide first:
+The Windows test baseline is Windows 11 x64 with Microsoft 365 desktop PowerPoint, either 32-bit or 64-bit. Native ARM64 and Windows x86 are outside this baseline.
+
+For MSI installation, install these prerequisites machine-wide first:
 
 - .NET Framework 4.8 or newer.
 - Microsoft Visual Studio Tools for Office (VSTO) Runtime.
-- Microsoft Edge WebView2 Evergreen Runtime, meeting the minimum version in the release's deployment guide.
+- Microsoft Edge WebView2 Evergreen Runtime, meeting the minimum version stated in the package's `DEPLOYMENT.md`.
 
-The MSI checks prerequisites but does not download them. Native ARM64 and Windows x86 are outside the supported baseline.
+The MSI checks these requirements but does not download missing runtimes. If you cannot install them, ask your IT administrator.
 
-## Standalone
+## Standalone MSI
 
-1. Download the asset ending in **Standalone-x64.msi**.
-2. Close all PowerPoint windows and run the MSI. Approve the Windows administrator prompt.
-3. Reopen PowerPoint and verify that XKey loads.
+1. Open [GitHub Releases](https://github.com/azure06/xkey-releases/releases) and choose the package you want to install. Prereleases are for testing.
+2. Download the file ending in **Standalone-x64.msi**.
+3. Close every PowerPoint window, run the MSI and approve the Windows administrator prompt.
+4. Reopen PowerPoint and confirm that XKey loads.
 
-The Standalone package includes the updater. Future updates require your approval and wait for PowerPoint to close. See [Updates](/updates).
+The package installs XKey and its updater for all users of the computer. User settings remain separate for each Windows account. See [Updates](/updates) for subsequent installations.
 
-## Managed installation
+## Corporate / Intune installation
 
-Use the **Intune** distribution when IT controls XKey. The `.intunewin` file is an upload container for Intune, not an installer you double-click. A direct Intune MSI installation is possible; follow the attached deployment guide. See [Enterprise deployment](/enterprise).
+If your device is managed by your company, use the software installation process provided by IT. The **Intune** package contains no self-updater. The `.intunewin` file is uploaded to Intune; it is not something you double-click to install.
 
-## Removal
+IT can also install the Intune MSI directly. See [Corporate deployment](/enterprise) and the package's `DEPLOYMENT.md`.
 
-Uninstall XKey through Windows Installed apps. Removing the Standalone MSI also removes its bundled updater; it is not a separately installed service. User settings, update-channel configuration and diagnostic caches are preserved. Intune installations should be removed through the company's management process.
+## ClickOnce
 
-## Troubleshooting
+Use the original installation link supplied to you and follow its setup prompts. A ClickOnce installation belongs to the Windows user who installs it. Other Windows users may have separate installations.
 
-If installation reports a missing prerequisite, install the required machine-wide runtime and retry. If XKey does not load, check whether PowerPoint disabled the add-in or whether an older ClickOnce/developer installation conflicts with it. Avoid deleting Office registrations or the whole ClickOnce cache as a general fix.
+To move to an MSI, remove the confirmed XKey ClickOnce installation in each affected user's account before deploying the machine-wide package. IT has a migration script for this purpose. Do not clear the whole ClickOnce cache.
 
-When [reporting a problem](https://github.com/azure06/xkey-releases/issues), include the XKey version, distribution, Office bitness and the error message. Review logs before sharing them and remove personal information or credentials.
+## Uninstall
+
+Close PowerPoint and remove XKey through Windows Installed apps, or follow your company's managed removal process. Removing the Standalone MSI also removes its bundled updater. It is not a separately installed background service.
+
+User settings, the administrator's update-channel choice and diagnostic caches are preserved. ClickOnce removal must be performed in the account that owns the installation.
+
+## If XKey does not load
+
+Check installation errors and missing runtimes first. PowerPoint may also have disabled the add-in, or a previous ClickOnce or developer installation may conflict with it. Ask for help before deleting Office registrations.
+
+When [reporting a problem](https://github.com/azure06/xkey-releases/issues), include the installed version, installation type, Office bitness and error message. Remove personal information and credentials from shared logs.

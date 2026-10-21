@@ -1,0 +1,63 @@
+# 法人向け：Intuneでの導入
+
+[English](/enterprise)
+
+IT管理者がインストールと更新を管理する場合は、**Intune版**を使用してください。端末全体にXKeyをインストールし、Standaloneの自己更新機能は含みません。
+
+## ダウンロードするファイル
+
+[GitHub Releases](https://github.com/azure06/xkey-releases/releases)から、同じバージョンのファイルを取得してください。
+
+| ファイル | 用途 |
+| --- | --- |
+| **Intune-x64.intunewin** | IntuneのWindowsアプリ（Win32）としてアップロード |
+| **Intune ZIP** | MSI、署名済みのインストール・削除・検出・移行スクリプトと関連ファイル |
+| **Intune-x64.msi** | 直接インストール、またはMSIの確認 |
+| **DEPLOYMENT.md** | パッケージ固有の要件と詳細コマンド |
+
+`.intunewin` は配布用のコンテナーです。Intuneが管理対象端末へ内容をダウンロードし、管理者が設定したコマンドを実行します。利用者がこのファイルを直接実行するものではありません。
+
+## 端末の準備
+
+- デスクトップ版PowerPoint、.NET Framework 4.8以降、VSTO Runtime、必要なWebView2 Evergreen Runtimeを端末全体に導入します。ランタイムの最低バージョンは付属ガイドで確認してください。
+- 前提コンポーネントは、個別のIntune依存関係として配布します。
+- 既存のMSI、Standalone、ユーザーごとのClickOnceを調査します。StandaloneとIntuneは共存できません。
+- `Migrate-XKeyClickOnce.ps1` は、**対象の各Windowsユーザー**として実行します。既定では調査のみを行い、XKeyのインストールを確認後に `-Remove` を指定して削除します。ユーザー移行をSYSTEMで実行しないでください。1アカウントの成功は、他のアカウントの移行完了を意味しません。
+
+## Win32アプリの設定
+
+付属の `.intunewin` をアップロードし、インストールの処理は **System**、要件はWindows x64に設定します。コマンドは次のとおりです。
+
+インストール：
+
+```text
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy AllSigned -File .\Install-XKey.ps1
+```
+
+アンインストール：
+
+```text
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy AllSigned -File .\Uninstall-XKey.ps1
+```
+
+パッケージに含まれる生成済みの **Detect-XKey.ps1** を、64ビットPowerShellで実行するカスタム検出スクリプトに指定し、署名チェックを有効にしてください。ソースのテンプレートを使用しないでください。検出ではIntune版であること、バージョン、ファイル、登録情報を確認し、同じバージョン以上を認識します。
+
+戻り値は **0：成功、3010：ソフト再起動、1618：再試行** に設定します。PowerPoint起動中はプレゼンテーションを閉じずにインストールを延期します。再試行回数には制限があるため、利用者がPowerPointを閉じた後に、IT管理者による再配布が必要な場合があります。
+
+画面での設定方法は、[MicrosoftのWin32アプリ追加手順](https://learn.microsoft.com/ja-jp/mem/intune/apps/apps-win32-add)を参照してください。
+
+## 更新の配布
+
+新しいIntuneパッケージは、一部の端末で試験導入してから展開します。置き換え関係（supersedence）では **Uninstall previous version = No（以前のバージョンをアンインストールしない）** に設定し、新しいXKey MSIにアップグレードを任せます。配布先とタイミングはIT管理者が制御します。
+
+設定については[Microsoftの置き換え関係ガイド](https://learn.microsoft.com/ja-jp/mem/intune/apps/apps-win32-supersedence)をご覧ください。Intuneの割り当てが残った状態でStandaloneへ変更しないでください。
+
+## ログと削除
+
+管理スクリプトのログは `%ProgramData%\Infiniti\XKey\Logs` に保存されます。アンインストールしても、ユーザー設定とアプリデータは保持されます。管理対象アプリがすでに存在しない場合、削除ラッパーは成功として終了します。検出に `Win32_Product` を使用しないでください。
+
+## 本格展開の前に
+
+使い捨ての検証端末で、SYSTEMによるサイレントインストール、標準ユーザーでのPowerPoint起動、検出、更新、修復、削除、設定の保持を確認します。運用対象のOfficeの32/64ビット構成をそれぞれ検証してください。管理者がMSIを直接実行できることだけでは、Intuneでの動作確認にはなりません。
+
+付属の `validation-report.json` で自動検証の結果と未検証範囲を確認し、本格展開前に実際のIntune環境で試験導入してください。社内ポリシーに応じて署名元の承認が必要な場合がありますが、署名証明書を「信頼されたルート」に追加しないでください。

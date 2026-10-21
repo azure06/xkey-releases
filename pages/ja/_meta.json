@@ -1,0 +1,7 @@
+{
+  "index": "インストール方法を選ぶ",
+  "installation": "インストールと削除",
+  "updates": "アップデート",
+  "enterprise": "法人向け / Intune",
+  "english": { "title": "English", "type": "page", "href": "/" }
+}

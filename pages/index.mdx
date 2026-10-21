@@ -1,27 +1,29 @@
-# XKey for PowerPoint
+# XKey installation guide
 
-Download XKey, choose the right installation package, and understand how updates are delivered.
+[日本語](/ja)
 
-[**Browse GitHub Releases →**](https://github.com/azure06/xkey-releases/releases)
+Choose how to install XKey for Microsoft PowerPoint and who will manage its updates.
 
-## Choose your installation
-
-| Distribution | Use it when | Update owner |
+| Option | Choose it when | Who manages updates? |
 | --- | --- | --- |
-| **Standalone** | You install XKey yourself and can approve administrator prompts | XKey's bundled updater |
-| **Intune** | Your company manages installation and updates | Your IT team |
-| **ClickOnce** | You already use the legacy ClickOnce installation | Its existing ClickOnce channel |
+| **Standalone MSI** | You install XKey yourself and can approve administrator prompts | XKey checks for updates; you approve installation |
+| **Intune** | Your company manages software on your device | Your IT team |
+| **ClickOnce** | You already use a ClickOnce installation | Its existing ClickOnce channel |
 
-Standalone and Intune cannot coexist. If your company manages XKey, follow its installation instructions.
+Standalone and Intune are alternative installations and cannot coexist. Ask your administrator before changing a company-managed installation. Avoid installing an MSI alongside ClickOnce.
 
-Start with the [installation guide](/installation). IT administrators can use the [enterprise guide](/enterprise). Testers can read about [update channels and testing](/updates).
+## Install XKey
 
-## Existing Standalone testers
+Follow the [installation guide](/installation) for prerequisites, installation steps and removal. Download MSI and Intune packages from [GitHub Releases](https://github.com/azure06/xkey-releases/releases).
 
-Version **1.0.5.0** moves update discovery and downloads to GitHub. Install its Standalone MSI manually once when coming from 1.0.3.0 or 1.0.4.0. Older helpers cannot discover this cutover because the previous website feed has been removed.
+## Keep XKey updated
 
-Fresh Standalone installations use **Stable** updates and the **Production** application backend. A prerelease does not automatically opt your machine into Preview.
+The Standalone updater checks when PowerPoint starts, at most once every six hours. It asks for approval and waits for PowerPoint to close before installing. See [how updates work](/updates).
 
-## Existing ClickOnce users
+## Deploy across a company
 
-Existing ClickOnce files and installation URLs remain available. GitHub release publication and promotion do not change ClickOnce. Coordinate migration to an MSI with your administrator to avoid conflicting installations.
+The Intune distribution lets IT control deployment, detection and updates. See the [Intune deployment guide](/enterprise), then use the detailed instructions supplied with your package.
+
+## Existing ClickOnce installations
+
+Keep using your original installation URL and update channel. ClickOnce updates are separate from MSI updates. If you want to change installation type, coordinate removal of the existing installation first.
