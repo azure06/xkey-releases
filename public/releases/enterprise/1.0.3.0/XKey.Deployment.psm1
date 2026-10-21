@@ -21,10 +21,14 @@ function Get-XKeyRelease {
 
 # Pure detection logic is also exercised with incomplete and newer installation fixtures.
 function Test-XKeyInstalledState {
-    param($State, [version]$MinimumVersion)
+    param($State, [version]$MinimumVersion, [string]$ExpectedProductCode)
     if (!$State -or !$State.Version -or !$State.DllVersion -or !$State.FilesPresent) { return $false }
     try {
+        $distribution=if($State -is [Collections.IDictionary]){$State['Distribution']}elseif($State.PSObject.Properties['Distribution']){$State.Distribution}else{$null}
+        if($distribution -and $distribution -ne 'Intune'){return $false}
+        if(!$distribution -and [version]$State.Version -gt [version]'1.0.3.0'){return $false}
         if ([version]$State.Version -lt $MinimumVersion -or [version]$State.DllVersion -ne [version]$State.Version) { return $false }
+        if ($ExpectedProductCode -and [version]$State.Version -eq $MinimumVersion -and $State.ProductCode -ne $ExpectedProductCode) { return $false }
         $expected = ([uri]$State.ManifestPath).AbsoluteUri
         foreach ($manifest in @($State.Manifest32, $State.Manifest64)) {
             if (!$manifest -or !$manifest.EndsWith('|vstolocal', [StringComparison]::OrdinalIgnoreCase)) { return $false }
@@ -45,6 +49,7 @@ function Get-XKeyInstalledState {
     $reg64 = Read-XKeyRegistry 'Software\Microsoft\Office\PowerPoint\Addins\XKey' Registry64
     return [pscustomobject]@{
         Version = $metadata['Version']; ProductCode = $metadata['ProductCode']; Folder = $folder
+        Distribution = if($metadata['Distribution']){$metadata['Distribution']}elseif([version]$metadata['Version'] -le [version]'1.0.3.0'){'Intune'}else{'Unknown'}
         DllVersion = if (Test-Path -LiteralPath $dll) { [Diagnostics.FileVersionInfo]::GetVersionInfo($dll).FileVersion } else { $null }
         FilesPresent = (Test-XKeyInstalledPayload $folder ([string]$metadata['Version']))
         ManifestPath = $manifest
@@ -113,6 +118,8 @@ function Invoke-XKeyMsi {
 }
 
 function Get-XKeyInstalledProductCode {
+    $metadata=Read-XKeyRegistry 'Software\Infiniti\XKey'
+    if($metadata -and $metadata['Distribution'] -and $metadata['Distribution'] -ne 'Intune'){return $null}
     # Read ARP inventory directly; Win32_Product would trigger unrelated MSI repairs.
     $base = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
     try {
@@ -122,7 +129,10 @@ function Get-XKeyInstalledProductCode {
             $codes = @()
             foreach ($name in $arp.GetSubKeyNames()) {
                 $key = $arp.OpenSubKey($name)
-                try { if ($name -match '^\{[0-9a-fA-F-]{36}\}$' -and $key.GetValue('DisplayName') -eq 'XKey for PowerPoint' -and $key.GetValue('Publisher') -eq 'Infiniti' -and $key.GetValue('WindowsInstaller') -eq 1) { $codes += $name } }
+                try { if ($name -match '^\{[0-9a-fA-F-]{36}\}$' -and $key.GetValue('DisplayName') -eq 'XKey for PowerPoint' -and $key.GetValue('Publisher') -eq 'Infiniti' -and $key.GetValue('WindowsInstaller') -eq 1) {
+                    if((!$metadata -or !$metadata['Distribution']) -and [version]$key.GetValue('DisplayVersion') -gt [version]'1.0.3.0'){throw 'Cannot determine ownership of this XKey installation.'}
+                    $codes += $name
+                } }
                 finally { $key.Dispose() }
             }
             if ($codes.Count -gt 1) { throw 'Multiple XKey MSI registrations found; investigate before removal.' }
@@ -136,8 +146,8 @@ Export-ModuleMember -Function *-XKey*
 # SIG # Begin signature block
 # MIImpwYJKoZIhvcNAQcCoIImmDCCJpQCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDPP36AJjGb4f6d
-# uawFzrBY6k0B33R5upFP/BwHjb4DmKCCIDcwggWNMIIEdaADAgECAhAOmxiO+dAt
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAFAnIMaMTU4Hf7
+# ER2lseI3Zr4YoBtPebLCHmldOpkjJaCCIDcwggWNMIIEdaADAgECAhAOmxiO+dAt
 # 5+/bUOIIQBhaMA0GCSqGSIb3DQEBDAUAMGUxCzAJBgNVBAYTAlVTMRUwEwYDVQQK
 # EwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAiBgNV
 # BAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBDQTAeFw0yMjA4MDEwMDAwMDBa
@@ -314,31 +324,31 @@ Export-ModuleMember -Function *-XKey*
 # bSBDb2RlIFNpZ25pbmcgMjAyMSBDQQIQUZ62GNEPcCBOFx7t9ALUBTANBglghkgB
 # ZQMEAgEFAKCBhDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJ
 # AzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMC8G
-# CSqGSIb3DQEJBDEiBCDVZmk99TxtkUnIpCTLOLQDhgeLLDHOcBjHnpWoDNA7IjAN
-# BgkqhkiG9w0BAQEFAASCAYB/YyFjFB6WP0AVqmDqtC8mMJ+13IArflEd/Cx5DiVE
-# 8jfXABBTl4EiGvmC9MG9VBX+wQ4mxXstQvPTX4g8NIE51XP6YkXi7/s443Dv++mp
-# JqKf2ZPlzy9xjiCYy/8QkWV+F7ubXMCIqqB5hmp6+kDw7ce4gT8O3SGQxSjR6svv
-# 4IJpNV5SpTZlgdAX23DyaFjCQPoAfG5nue9tDvQED9KS/x9orIz8K74RAz35gc0X
-# Z9K+oI5ZqfNvVfcYjBpqiPfL9zrwpq2OXY1q7TrYKfnV/A2A3yK4XoWRUhxTfpt+
-# IzdHUJxfgMvw1G649AprpGtcKHGx47ZWibMuzESNwJf0yciF6QRKraNGxo0/szLO
-# u3Dz7hCTn5cBp55dBMFKsSY2jffD67FY4WCWrybLG7kGbqE86cms2xDQWBK6yk5a
-# Q9wlvi6r6GJfyJX8EJ0oQWo5reHrHqu+YICzEAoAwfjI9azBbxKnSiykcGyksPjX
-# GBXYyXdhIzAfnc8fCiP64MKhggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEw
+# CSqGSIb3DQEJBDEiBCAuXTCeNy/Po6gB61YuH5y71YuarMZ2n7g50txPhe28qDAN
+# BgkqhkiG9w0BAQEFAASCAYAsCOvBHGumYjHP39oujKsWZOBv9gR5+tHoEQ3zQaNa
+# cNK84n2XQiCl73kg4qajmMnzMAQJlo4I9L0EkBFK7hpyJHl5XyVK6jTKZMRPUtNg
+# sYb8BM+LHGg0a7DJD+F0Z9P5jhtTjayPRq+JuMTwpfx+3HXsK1KVGkyvvpjQFoJr
+# 3gi30F07AxCKlqIkfvjvUA2wXY+V7YnIXV813Ysya5phJQqEGsKEPWFkyki5dC+t
+# h/JhfPkCGC+VF0NHUAfdDbCs7I2PY6bkaIEGGA9JSWlVkk3wHHTGObDRSPYVngIB
+# zS0Iw43rQVDSQKL6XkK0x/PFYbSBkbZEPxLwFNonjZuJwikLdxTi7c6iKT1BYgqg
+# bFxwYCxxZkiY/EIK2QK5HYBk4IXP3RLDyQTLjubm/xDX0BlQVOcNXOBWRSHImxv8
+# 36dTVITlRDinPOsmFi3BalituTPG7Ful7wivkqNbbv0qvGO61gBsAV4V/O7I32Ln
+# r25l1GJJcDK04mcjG4leGmihggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEw
 # fTBpMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNV
 # BAMTOERpZ2lDZXJ0IFRydXN0ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hB
 # MjU2IDIwMjUgQ0ExAhAIT9wzT35FTtvDD4/5khg1MA0GCWCGSAFlAwQCAQUAoGkw
-# GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDIw
-# MTM0MzUyWjAvBgkqhkiG9w0BCQQxIgQga9yWXZqpmcz8soFXAamz0EJN/V5rujsp
-# uQhA6oxwAqAwDQYJKoZIhvcNAQEBBQAEggIAsT14tqszbK7TCKrnKbYl31k+TUzo
-# BNNJZtMZmh/YlyGA4em9T+mfwwPJaXGQKBdaKJltWZ9oaj+iCenf27K7ThHPI12t
-# onGtpwGeAPM7DY30iLm/0g206g007Gma4tbaECgLC9ToQBL5k10zTsQx1XYNKWG/
-# 6Oh4uPNYC/3Qj87tOVlfWLbzA5Oj94w8H63blN4jKLOZyS1LetpIvjizUlZrLHnQ
-# n0gfHI3s5YIoWch4Kadm8LEAJzsPHu22ifXE0Am/LglnuIuJS2n88Tod8wzGwmqF
-# RI0eCPiygc4s5/mNXDLJaMY8CDb2Y50JCRzH3lw5RO8FIozwISURlznToO4kH0Mm
-# k63Rjfs7A8Oyc+yT/zIONy6eVoVrdqOIovmt8XCLZiCPhBBBftGDqOumtgK60Nuf
-# mc3Ix236MAuoGwvf1wmVqiwikM6Rju5k+RuSo9bLWLi6zNQkbwVTdxQsEpiD0n0+
-# dO/2CrQjMYuwbXy81MyWGgn0yb/ZJPcOAg0WQErlOwBHk71fU2BMulcwucepDqeM
-# K1WYAlWlv5AyHRz46JZ+1E1LED3mPHNNSBbPi29hdn1gC5y5p91LAwogj/J/YFlA
-# yiBuwBSkkaZhD3SOrzcWSvb1TEN9bF4FKo5iGOWLpocNMri9Q3fH0/hjaBQMVfPp
-# adhk6hPBYmsSz7c=
+# GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDIx
+# MDQyMzQzWjAvBgkqhkiG9w0BCQQxIgQgGk6I1Glv029NwVnm3XFSCamZmdmxnqsN
+# QgJ0B6awy4wwDQYJKoZIhvcNAQEBBQAEggIAccI2G1BlS7nVrDrqqBg9sG0974I0
+# qJDjq89t4ukBvAV+viGb3EVMdxerpxPydUR0pE8+2sFk2rVPNcLoy32n9gqgUELX
+# /f8kXQHZ07w46aV+tV390oap1HR5/Y2In0SQut9n6YVZjwr0+12OiCgIuKDk1x9Q
+# HT+UN5GRhBhuDr8vEZNMghEAoOujk7quSumTzAKQqn+7+vLkDjupoR1c1UzQHG1F
+# WGy/THzh1MO8Sslmf2yoEey6m1WICIGuWArGjtuA92/texrstmearnr1bAol3WW/
+# 7RS5m3sNVSJkPHquK3AoMjIdSgMnw/MEI2FRIyUZlkO53KEXWsIQ+2Nasx7l1h3i
+# kfqOG6luYygv4GAY6e03XLZPQKBTWbk+NEfloBa1YE/x/O/UOaRc0fCYRQ59RcXP
+# XSAUTe3e+GvU2JcXfq5uRXcg7NKs53mXtitFuThy/Dlk9fnWAFhc1v+NhjTm9uC3
+# lfBrxgpxaB0MPXsV1UYgDXWi4QyhmD3TUlzavgd/O4SNjDizClWHXB9xdOz34UWN
+# eWCptNearKZjUJBCMS6ehCIFmXU5mb8OTmRwLrx5lDpWP8zI1Aiy40d6h9P+IdVb
+# 5sF8227VLWeAw7v3A8GoH7GjPl6f+PuWVzzp6JMQijfGG8fC8CfzYLhiMNRS3pc+
+# /H4z6LQ8XJ+VAxA=
 # SIG # End signature block

@@ -4,7 +4,9 @@ $ErrorActionPreference = 'Stop'
 try {
     Import-Module (Join-Path $PSScriptRoot 'XKey.Deployment.psm1') -Force
     $release = Get-XKeyRelease
-    if (Test-XKeyInstalledState (Get-XKeyInstalledState) ([version]$release.version)) { exit 0 }
+    $installed=Get-XKeyInstalledState
+    if($installed -and $installed.Distribution -ne 'Intune'){throw 'Another distribution owns this installation. An administrator must explicitly authorize a channel switch.'}
+    if (Test-XKeyInstalledState $installed ([version]$release.version) $release.productCode) { exit 0 }
     if (Test-XKeyPowerPointRunning) { exit 1618 }
     $errors = @(Get-XKeyPrerequisiteErrors ([version]$release.minimumWebViewVersion))
     if ($errors.Count) { throw ($errors -join ' ') }
@@ -12,15 +14,15 @@ try {
     if ((Get-FileHash -LiteralPath $msi -Algorithm SHA256).Hash -ne $release.msiSha256) { throw 'MSI checksum mismatch.' }
     if ((Get-AuthenticodeSignature -LiteralPath $msi).Status -ne 'Valid') { throw 'MSI signature is not valid.' }
     $code = Invoke-XKeyMsi Install $msi
-    if ($code -eq 0 -and !(Test-XKeyInstalledState (Get-XKeyInstalledState) ([version]$release.version))) { throw 'MSI completed but installed-state verification failed.' }
+    if ($code -eq 0 -and !(Test-XKeyInstalledState (Get-XKeyInstalledState) ([version]$release.version) $release.productCode)) { throw 'MSI completed but installed-state verification failed.' }
     exit $code
 } catch { [Console]::Error.WriteLine($_.Exception.Message); exit 1603 }
 
 # SIG # Begin signature block
 # MIImpwYJKoZIhvcNAQcCoIImmDCCJpQCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCxKqmi2wrOikJ6
-# Mq/0Ci7Q9mAPAg5aX/PXj58OuubCZ6CCIDcwggWNMIIEdaADAgECAhAOmxiO+dAt
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDdGVOyhRaK2XS0
+# Qq3hfzy6RYvk7GHKXXVEFzDZoCeyBqCCIDcwggWNMIIEdaADAgECAhAOmxiO+dAt
 # 5+/bUOIIQBhaMA0GCSqGSIb3DQEBDAUAMGUxCzAJBgNVBAYTAlVTMRUwEwYDVQQK
 # EwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAiBgNV
 # BAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBDQTAeFw0yMjA4MDEwMDAwMDBa
@@ -197,31 +199,31 @@ try {
 # bSBDb2RlIFNpZ25pbmcgMjAyMSBDQQIQUZ62GNEPcCBOFx7t9ALUBTANBglghkgB
 # ZQMEAgEFAKCBhDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJ
 # AzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMC8G
-# CSqGSIb3DQEJBDEiBCDH3cHNtX3MeKBTOfLCiXIvsfn+mNQrSnPxwOccESCGFTAN
-# BgkqhkiG9w0BAQEFAASCAYA3AsIQHO1BQDua6p5wMpDVgHKASnXjwTkElPzpLZW9
-# SJrAsfc09AFGfTqs6abAVjrpC0T/yr+rvxrnVallxkPuHSMBoE+d3GQZhax6Li0z
-# FpAuHgedl2o+2wn5kkEzd613nrxDmCQ92RZfwHxn9+tDNVqn+z4iU42UHXR6+AYv
-# iA8JaQdo0YpfLrna0GXtwanFL+rptK+0rl27LAdrepAaz6psHMBkYobi2obfxrvo
-# T8e6ECyaCxicwINIkKAWeCDJ41qxWX4ikF6K43QM9cu2rVyCnxbUrlI297rxDWsu
-# /kbcuBXe5w8Su8khTVFHn5eCoeQSaTsreZ7b7Y6+3NppCa3ZnYokIOe/ru+zY7mQ
-# Vzw0HtRdN1sZSvl8LqDPHiEl97gyhFUYGMgTof5UFUlj3yVqUwCMOaAwayx6UORx
-# HEbMKaUMsgUgZ02I/I4oGFnAkmMivSMGv9tMsrT9ws3eg2wtlqlwkWM057hILY7o
-# r42uNp3Vl/qjEEsrPmk3gqyhggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEw
+# CSqGSIb3DQEJBDEiBCCYrX4yx+dSaRNrXiX0M3Svq4OxKP4qQ7WO5hUb8PkCpTAN
+# BgkqhkiG9w0BAQEFAASCAYBi9WOq5hN3N3ukr0f6euV7ATk0A4dTq2jptOmRCq0c
+# ka50MxGEwzV3OXhwdVxjkn6t5qFQg+k5vG37d0KBb++gb4nFr0BbOHbxsrk6922D
+# SMAEeMMalYjN2XQ/PKVCuCiJIaO6m3R/RGXZ3xK0BPU1RwbVm4Fk8WEYsXwIAoSS
+# oqGLRCIdpAlpWK2A1PddEbuzFfJTc1k7dAuZ7ao7aAiHBjqUqkXBwu5JEnt8JIib
+# XJJJLbypM++VMKzg+t+N6Y2X6k+qKeF8pKeTpmCDoBDrp2z+2Fk7Vu81Sm1kK0Y5
+# uxGeUbR83JbzhZ14fYxQAVN6G7PcMB912qRElRJGPyxnGuW9xhhfs8O/UJuiiwrg
+# dhS+bmL+4FPEVonQ0YUn/1iEZuGg5Xjjgv2kFWLBF5hoeaaf4UEdFasPZrhp66WZ
+# oekAe9h2rQbOqF6LXm92i6LHKu7nM/iwFhoXsl5NsShpfBWGmDdAWFGZ6f2cvrRm
+# tjIbhHKUqWlMJmslmAl++wuhggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEw
 # fTBpMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNV
 # BAMTOERpZ2lDZXJ0IFRydXN0ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hB
 # MjU2IDIwMjUgQ0ExAhAIT9wzT35FTtvDD4/5khg1MA0GCWCGSAFlAwQCAQUAoGkw
-# GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDIw
-# MTM0MzQ4WjAvBgkqhkiG9w0BCQQxIgQggKCqUdezFBTHvLfAzit58MSSfdlrkk4t
-# RDo46ygFfdYwDQYJKoZIhvcNAQEBBQAEggIAEWXEQbbtjMIl2x9oeXdYEzS0hXzj
-# Xn24r9Awbsja/UyQcpTLSxwtwK51eV74PG7liQfwHnx7DRw13bCvmXV1jjQ29ZUW
-# 8scp55LqnYwYOz/QNcH2MtlEHzZr9sjJXQFxrnlu3IqPyyXf++f/ncuO6ZC0yPRx
-# TpluiKGzMdw592B9CTvLtEbApAWkF+6IbVbYG9koD12r6yFlR9O1xWXedQvs6HaF
-# K3T93T35Bg8ecpHf6YR5PUSa8F95VDxTnBJEaCDrhTPiaOtWFOoD8rbGNuG7m+ma
-# 1HNttIE+LQDnvvycLc+mGP7zPMdUvRP+VnbtUCzsono06Ecr+d/8u1T/G9cN3By7
-# oY8d3HMArWdKjHx9MqMExDDpjx6fi+jiHA7XPrlFgj4LrjenqaXHrKmDTDH/id7T
-# y7xtkTspcu+K1AR4QWNy5f66TVUOM4M7MDy34rv8G0JUl8MbthaDSKILsSAKK7a2
-# tUFCUHPrGL0XYVCXNMUOKSRNwYgM0md0eQiN58BTF/IBdnbUd4xts44tjuG9B9xc
-# ezcNLB5bvBjSKyvTJsGtl1MsnIVJwC13V3w6NKDsxhHxow5QxPGJCHL4Dych/VSl
-# y///7JDKF13FWsh8WqqIkGalm+4fZCDkhAQXZm6opOf8wN+UfIkZuHMJk+Lv6PXB
-# 3DyU2Aul/YpQIhE=
+# GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDIx
+# MDQyMzM5WjAvBgkqhkiG9w0BCQQxIgQgwBLpouyaEPqUXOaNDBs4g6TRXuGbE7Zb
+# b270SAdxJGIwDQYJKoZIhvcNAQEBBQAEggIARjVgbepYy5gj5RsO0ajqPXVf/m0W
+# Ouo7DHdBXk8DDEh7SIo+7dja/jG6wLVHIwo+MfcXBQ+G6bW6znNxt5nZ2tnMTzGx
+# Tpnv7508IAXEO7LW3QcLmar/v717t4Qo8dj57pvvVBL94k0xpM4UcynLb2flTPFr
+# koZycUSdEos8Sh7U5zjODBblwbeGXZMVwxdpFPWSTQbFf58qFa/bHVP+o3XhQCl/
+# osXHfE12DBxEE3v/1lxCWPvexAGFsfi/K1FtNycNwpPMJBW4xIX94zEfNSUCE8VG
+# OYG5NkVLlIcv7pmNIdxWETXnj97mwqLibtsD2eIv2Iubmx+w/yA4PyPqt+aL9NUh
+# FFaVygcwcpUE7dDEagpziyGeJIQv1t3wbWv3m2sDY+IXn91j/ok/y4XULfLMKW0z
+# SzaVe2lK1ObAlOrgPHt4xN4YAFbPzWRTsuXtblpGGX2yiEo4L2R7yT4US+W2P5nR
+# vz4i5egquQUZ0NcgU3gl+LUqiXH1jx0CblkvUeCYuYvFiRfieopmDkmXGI792pN1
+# lBRHSPYuoBV8IjVD9vuB17ut0a5py+j0vIzOi35MIsR+CmUpg2phpDJUdAJjJqEl
+# GCJUmO1j/6Fbtr2d4sN/PakOp4UrQxOydylgQxnWJA1XWzIcMMlIgDW09rB9UpmE
+# sfQU7txmx0ArMfU=
 # SIG # End signature block

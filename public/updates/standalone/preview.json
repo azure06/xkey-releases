@@ -1,0 +1,12 @@
+﻿{
+    "schema":  1,
+    "distribution":  "Standalone",
+    "channel":  "preview",
+    "version":  "1.0.3.0",
+    "msiVersion":  "1.0.3",
+    "url":  "https://resources.infiniticlips.com/releases/standalone/1.0.3.0/XKey-1.0.3-Standalone-x64.msi",
+    "sha256":  "A79E090E031109313E420D292AD091D0648CD96BAB7ABF757C953AD0F5ADAE93",
+    "size":  11587584,
+    "productCode":  "{2F8CFA95-8C8E-C637-7651-2842A3A96EBC}",
+    "upgradeCode":  "17A6CA17-29A4-4485-9AFA-60647FE0A33C"
+}

@@ -2,6 +2,7 @@
 # Intune custom detection scripts run independently of the extracted package.
 # Build replaces this token with the shared four-part release version.
 $minimumVersion = '1.0.3.0'
+$expectedProductCode = '{B317B666-4A9A-DB91-059A-30525F22A1FB}'
 $ErrorActionPreference = 'Stop'
 try {
     # Standalone function bodies are inserted here by the release build.
@@ -17,10 +18,14 @@ try {
     } finally { $base.Dispose() }
 }
 function Test-XKeyInstalledState {
-    param($State, [version]$MinimumVersion)
+    param($State, [version]$MinimumVersion, [string]$ExpectedProductCode)
     if (!$State -or !$State.Version -or !$State.DllVersion -or !$State.FilesPresent) { return $false }
     try {
+        $distribution=if($State -is [Collections.IDictionary]){$State['Distribution']}elseif($State.PSObject.Properties['Distribution']){$State.Distribution}else{$null}
+        if($distribution -and $distribution -ne 'Intune'){return $false}
+        if(!$distribution -and [version]$State.Version -gt [version]'1.0.3.0'){return $false}
         if ([version]$State.Version -lt $MinimumVersion -or [version]$State.DllVersion -ne [version]$State.Version) { return $false }
+        if ($ExpectedProductCode -and [version]$State.Version -eq $MinimumVersion -and $State.ProductCode -ne $ExpectedProductCode) { return $false }
         $expected = ([uri]$State.ManifestPath).AbsoluteUri
         foreach ($manifest in @($State.Manifest32, $State.Manifest64)) {
             if (!$manifest -or !$manifest.EndsWith('|vstolocal', [StringComparison]::OrdinalIgnoreCase)) { return $false }
@@ -58,6 +63,7 @@ function Get-XKeyInstalledState {
     $reg64 = Read-XKeyRegistry 'Software\Microsoft\Office\PowerPoint\Addins\XKey' Registry64
     return [pscustomobject]@{
         Version = $metadata['Version']; ProductCode = $metadata['ProductCode']; Folder = $folder
+        Distribution = if($metadata['Distribution']){$metadata['Distribution']}elseif([version]$metadata['Version'] -le [version]'1.0.3.0'){'Intune'}else{'Unknown'}
         DllVersion = if (Test-Path -LiteralPath $dll) { [Diagnostics.FileVersionInfo]::GetVersionInfo($dll).FileVersion } else { $null }
         FilesPresent = (Test-XKeyInstalledPayload $folder ([string]$metadata['Version']))
         ManifestPath = $manifest
@@ -65,7 +71,7 @@ function Get-XKeyInstalledState {
         Manifest64 = if ($reg64) { $reg64['Manifest'] } else { $null }
     }
 }
-    if (Test-XKeyInstalledState (Get-XKeyInstalledState) ([version]$minimumVersion)) {
+    if (Test-XKeyInstalledState (Get-XKeyInstalledState) ([version]$minimumVersion) $expectedProductCode) {
         Write-Output "XKey $minimumVersion or newer is installed."
         exit 0
     }
@@ -76,8 +82,8 @@ exit 1
 # SIG # Begin signature block
 # MIImpwYJKoZIhvcNAQcCoIImmDCCJpQCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAjNEOIyNK6zbZZ
-# y7FcZmnujzK3hdmhSxPOpF3tUx9Y3qCCIDcwggWNMIIEdaADAgECAhAOmxiO+dAt
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCADe8iV+RMdW1hl
+# pBvhTAS/RzFcO4lJ7YjOmuTIk83qGaCCIDcwggWNMIIEdaADAgECAhAOmxiO+dAt
 # 5+/bUOIIQBhaMA0GCSqGSIb3DQEBDAUAMGUxCzAJBgNVBAYTAlVTMRUwEwYDVQQK
 # EwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAiBgNV
 # BAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBDQTAeFw0yMjA4MDEwMDAwMDBa
@@ -254,31 +260,31 @@ exit 1
 # bSBDb2RlIFNpZ25pbmcgMjAyMSBDQQIQUZ62GNEPcCBOFx7t9ALUBTANBglghkgB
 # ZQMEAgEFAKCBhDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJ
 # AzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMC8G
-# CSqGSIb3DQEJBDEiBCAOFJFJQY/3nO9b82+UT2S/b39GiVFD3Dzp7S6xW8vcKzAN
-# BgkqhkiG9w0BAQEFAASCAYCKaOcoCMtcEDxFRSyin6GOXTe7WHw22d+x55bLCgoc
-# rFnJVwG1mmHN1yM/MfJ7Kc6UbpizM9RD7FSlb3et4mUJiZapZrDghYPHyuu4uOW9
-# brG5u/kh+vhpJyDPoU9WcDypQSF0oHeso89AiFo3LgXMN/rY+PyQ812k0PbuuxwB
-# Gow3sm+b83w/u16j7ndPTUYf8TDsH7PceQm3ZMIVIp4eotC4+CJ5tQad2XGnUcAZ
-# 0TPeVa1BuO9ksI1GH0eR5XSmSd4uAR+tQlq0FyhWNIZ2zNC0pSYgGuG8jBnr0sSg
-# 84V/nFuQiZCrxihoCdOYhpqgnoIRvhfzfsxMBZU4mD7em/Lj4xsU45lxjD/5l5pV
-# iEhUVtvZhkRk3GVXE5kLbRj0ftsKDibrJoDTTrf786dX4aNZxlWCV99DOpAXZZeC
-# k/5bgAzhCw0ozKmsXY7KpGffm4UaQzg5MA9SBmciGAOJzHhnyBKQiXewo+7ac0wU
-# 8NVf+0L7ux3kdZ96U+j1dfahggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEw
+# CSqGSIb3DQEJBDEiBCC3eSMmYUvL9S69xXAlJlicYrKXa4m4x7efyhV12GaetTAN
+# BgkqhkiG9w0BAQEFAASCAYBWO4BIE5dtOk9Yq/+gfxl9w57ht0fXuFdz2s8QyzK1
+# SmDcTvQ1hs50JDdIPqaG3tIPCm+optPyYR1EwanFY3Jbuq4NkFBT6YiRUUfiu7hq
+# gjUJBpVZbNQY2MwWW9oVQ+uK1R5O+W/JLrPP6GwSxPOcr1MqeAVghlfmsiaSKmtA
+# XULOZtQtSU7ndWX4Tty2iMM2Bx/+j7CVlyUmOepHDLED7Y6TqGZuz8NDCnkWTaar
+# XKTsJt62xCRDMxwPb1m/aPPwKf5Fj0Mu89eVKeyE70gIYfwJR3TnFVV/ng96yfQe
+# Xrh/5VYW9bbUKnNi4P8YxjhiAhTbSrS2+GmVvWNsC4qJJbtRlmgC8LEypq9m9/LQ
+# uUhEMvjAuO6GPTG5ba3QETo3pa456UeI2YWzHkvfjfpxAyWIgZ4JDIcXOkKKEHZm
+# i7lOaVjlbgGXIQSm/iihkycsd6KS3lLiYH3VAsq/FWYXcY6vT6ozfN49gfUovz+2
+# 3ayg2ifk+umMBwtDBw157kKhggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEw
 # fTBpMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNV
 # BAMTOERpZ2lDZXJ0IFRydXN0ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hB
 # MjU2IDIwMjUgQ0ExAhAIT9wzT35FTtvDD4/5khg1MA0GCWCGSAFlAwQCAQUAoGkw
-# GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDIw
-# MTM0MzQ3WjAvBgkqhkiG9w0BCQQxIgQgJtQXuK8aN5UyxyYFou98zDMvbM7KxpTA
-# Lpz5h+0pe90wDQYJKoZIhvcNAQEBBQAEggIAOTzSxRgdWBomqDuGjgtBrMJl/MMg
-# vH+D7R2gdqzDLZiT7WcnXtYMDTGTM6IbkOoDWD/PsxGNCc0ulzhZ43fGewh0ArMp
-# GB11iuJEiUsAWaYhOKLvQgjU5qReuKCQGvfLzkGTBPr8faHDZGsYLYNmB5dncU8j
-# qrDeyDfLgI0vCgOY+Tr9pycBNXAz65lVKuzBgdRjxoz1/13nCeqk5Xr8Ujpg0Bhg
-# 272h/L8JlDn0OdtOczRtb1sr3CEO+bvqVZ288CCVRb0WMP00+DGtFJpEtBN4QQrC
-# n+N4Zq2DjjkzVqy2mGzlhBiStWCeHN/leO9J3pxeIHzhd7Iey2rff9KVWIJkDL79
-# DImczkJazZPt6+QmGUgd6IGVU/tcTw7PLhH3pQ2yH84MtskNwMxLNX8qKUh5nr2a
-# dIc7Lf0yNvpL+W5DuGKF8R+abnBtCSTTtRmPiYlfNs6Ct0yK8u0/poW1brncM3lu
-# HU/s/yAUcw7QIaMzHq+3981mGaZvnQ3CHomMZ4grHNCaxatMpxJAhiC39bH9eAQc
-# tmpPjPqJJFBaQz+gjKSbjjKwD2cbF30TeSBsPp4FVDgaQh/lN3qGCce1DpjQyIrD
-# P27fl92CkNFCmGvoC31gt2itcjoaeArQS0LE0kvu9TmrXK8HHZeKLKHToTznRD9t
-# WcsjMLw7D/OT54E=
+# GAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDIx
+# MDQyMzM4WjAvBgkqhkiG9w0BCQQxIgQgWkEZID8YNk6hBAuHMwgdgfGZYskWwVsb
+# Nc8K2/OzvCgwDQYJKoZIhvcNAQEBBQAEggIAILg2RUPrGLH4FMHFGF12scWuzBwg
+# hP/GfOVTaDZOFZPEA82xFCSdMxM9Lg46+IXqJVKlP3NAv9b1J4ocT25FZ8crmuoH
+# bPFXWKKw1w9ICsj/fPwcTyPTQEgjt0BIkhUJzDZQE2o/gq8YTxbfvwANr/6M6kxd
+# vb64/TVa8dWBEBuzX1TBA8mLT2f4k65yRGAW7FjtDXuEoe1/WgA65rFZHDwYX/RR
+# C1UN2n6KEWmYY3+XoIQEAb3F+/eoOOuTF/esAzBbtRKjdzWlo4cBXIDHtCVzp5Pc
+# tP1WVy4oCil+KkfDt7QuaEsm2mbvOg27hNAimLnv0mi7wTl5fRDhoSSHlXqmNCT+
+# fzr55lc6F5BYVVcHHuojsfQBm6wmiXz4nzVYNZimrWZOPbRTBTFftBH1omhZu1Ff
+# zdwDxsBFVDGbgOVfOjBONrnVOEVkyok5M7yFpWY23zSVIhosC779W6cL4r9lJXIb
+# ktWy7OwuLOylWUJqIq8aTF8Bz3UGV79Mr2BZbfPg2iGtcE9C8OsoynkRwML/+5sn
+# ceVXj5IS7+fPXwYWdIVvn01aA0Up0X3vzd8LjZgWaw957W6Zuf8Lb34Y6WLn/Rnt
+# UkZZ8TwimGDn37LVITAlkXuj5PxcpcG0UmLA0hZqUA5KFVz50qwzCA9wIiADRpfa
+# zYOBhOVkxybLHxc=
 # SIG # End signature block

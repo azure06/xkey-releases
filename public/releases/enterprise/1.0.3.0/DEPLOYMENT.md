@@ -1,6 +1,20 @@
 # XKey enterprise deployment
 
-Status: local signed-package validation passed. Windows VM acceptance and a real Intune pilot are required before claiming verified compatibility.
+Status: 1.0.3.0 is a preview release. Local package, signature, dependency, updater logic and protected-cache tests do not replace Windows VM lifecycle acceptance or a real Intune pilot.
+
+## Distribution ownership
+
+Use the MSI explicitly named `Intune` with the enterprise scripts and `.intunewin` upload. It contains no updater and remains controlled by IT. The alternative `Standalone` MSI includes automatic update checking and an administrator-approved installer. Both use the same application folder and upgrade family and cannot coexist.
+
+Default installation blocks distribution changes. After removing the previous management assignment, an administrator may supply `ALLOWDISTRIBUTIONSWITCH=1` for a deliberate migration. Standard Intune wrappers never supply it. Intune detection rejects Standalone and its uninstall wrapper does not remove an explicitly Standalone installation. Legacy 1.0.3.0 and earlier MSI installations are treated as IT-managed. Remove obsolete Intune assignments before moving to Standalone, otherwise Intune will keep attempting remediation.
+
+Standalone checks its selected Stable or Preview feed in a separate helper on PowerPoint startup, at most every six hours per user. It offers the update, downloads/verifies it, waits for all PowerPoint windows to close and requests administrator approval. Selecting Postpone, cancelling UAC, losing connectivity or reopening PowerPoint leaves the existing application installed. Retry manually with the installed `Updater\XKey.Updater.exe --update`, or allow the next periodic startup check. It never forces PowerPoint closed or requests a reboot automatically.
+
+Standalone MSI logs and result codes are under `%ProgramData%\Infiniti\XKey\Updates\<job>\install.log` and `result.txt`. Elevated errors are separate `error-*.log` files in that protected Updates directory. User-side errors are under `%LOCALAPPDATA%\Infiniti\XKey\Updates\updater.log`. Results 0/3010/1618 mean success/reboot-required/busy; 1223 means user cancellation. The initial helper exits after handing off; the protected worker records the actual MSI result. These caches preserve diagnostics; an administrator can review and clean old completed job directories. User settings remain separate and preserved.
+
+The updater refuses administrator caches or installed updater files writable by ordinary users, unexpected reparse paths and altered/incorrectly signed packages. If an existing company directory has unsafe ACLs, have IT repair its permissions; the updater does not take ownership or silently broaden permissions.
+
+See [runtime configuration](../docs/runtime-configuration.md) for the manual developer-only backend configuration, administrator-controlled update channel and preservation of the 1.0.4.0 Preview channel. Fresh installations default to Stable. Intune remains IT-managed.
 
 ## Supported baseline
 
@@ -28,9 +42,9 @@ Upload the generated `Detect-XKey.ps1` as a **custom detection script**, run in 
 
 Return codes: 0 success; 3010 soft reboot; 1618 retry. Other codes indicate failure. A retry caused by PowerPoint being open never closes presentations. Intune retries are finite; IT must reschedule after the user closes PowerPoint. Logs: `%ProgramData%\Infiniti\XKey\Logs`. Never use `Win32_Product` for inventory or detection.
 
-The direct MSI also supports `msiexec /i XKey-1.0.3-x64.msi /qn /norestart /L*v install.log`. The wrapper adds version-aware skip, strict prerequisite checks, signature/checksum verification and post-install detection.
+The direct MSI also supports `msiexec /i XKey-1.0.3-Intune-x64.msi /qn /norestart /L*v install.log`. The wrapper adds version-aware skip, strict prerequisite checks, signature/checksum verification and post-install detection.
 
-The 1.0.3.0 prerelease was reissued with corrected VSTO and WebView2 prerequisite searches. Its application binaries and ClickOnce deployment are unchanged. Download the replacement MSI or Intune package and verify the current checksums. An already installed healthy 1.0.3.0 MSI is skipped by the wrapper; it does not need an application update for these prerequisite-only corrections. Existing Intune app content must be replaced or imported as a new app by IT; publishing a replacement download does not update uploaded Intune content automatically.
+The owner authorized replacing the withdrawn 1.0.3.0 preview with the current application, updater fixes and manual runtime configuration. Package revision 2 changes the MSI ProductCodes. Existing equal-version testers must manually install the replacement. Uninstall withdrawn higher versions before installing 1.0.3.0. Replace or reimport Intune content and use the new generated detection script; publishing downloads does not update existing Intune content. This preview exception is not a verified production upgrade path.
 
 ## Testing without an existing Intune subscription
 

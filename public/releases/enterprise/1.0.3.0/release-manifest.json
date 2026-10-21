@@ -1,12 +1,27 @@
 ﻿{
     "version":  "1.0.3.0",
+    "packageRevision":  2,
     "msiVersion":  "1.0.3",
-    "productCode":  "{042C6E76-5F2E-2CA2-BBE9-473FAD1A3727}",
+    "productCode":  "{B317B666-4A9A-DB91-059A-30525F22A1FB}",
     "upgradeCode":  "17A6CA17-29A4-4485-9AFA-60647FE0A33C",
     "minimumWebViewVersion":  "154.0.4258.31",
-    "msi":  "XKey-1.0.3-x64.msi",
-    "msiSha256":  "B931E1659E13B38070A305FA58E393AADD28E49164D83137F1BB74194CD169EC",
-    "sourceCommit":  "7f10a2833492d1b929baaa9e443c68c7fc04f51d",
+    "msi":  "XKey-1.0.3-Intune-x64.msi",
+    "msiSha256":  "19780D68DDC905FA08AE12E1BB27F1D0FA1689F8C5D7A121882877EBFEA084F7",
+    "distribution":  "Intune",
+    "updaterActivationReady":  true,
+    "productionVerified":  false,
+    "updaterProtocol":  1,
+    "standalone":  {
+                       "version":  "1.0.3.0",
+                       "msiVersion":  "1.0.3",
+                       "productCode":  "{2F8CFA95-8C8E-C637-7651-2842A3A96EBC}",
+                       "upgradeCode":  "17A6CA17-29A4-4485-9AFA-60647FE0A33C",
+                       "minimumWebViewVersion":  "154.0.4258.31",
+                       "distribution":  "Standalone",
+                       "msi":  "XKey-1.0.3-Standalone-x64.msi",
+                       "msiSha256":  "A79E090E031109313E420D292AD091D0648CD96BAB7ABF757C953AD0F5ADAE93"
+                   },
+    "sourceCommit":  "ee422b5a4127b81a7b3ee612e3c83ee5f44e27c1",
     "sourceDirty":  false,
     "signed":  true,
     "installUrl":  "https://resources.infiniticlips.com/releases/preview/bin/",
@@ -142,9 +157,6 @@
                  ],
     "wixVersion":  "7.0.0",
     "validation":  "Local package validation only; VM and Intune pilot pending.",
-    "applicationSourceCommit":  "b7eba9fe3cf24ecdb17569ad163c28fbbfd5a9a9",
-    "applicationReleaseManifestSha256":  "36B9F1E0DFEE0D96FFDFDE9EBB60DB1202BA77F23E0F828810BEABF6E59D814D",
-    "reissueOfMsiSha256":  "8A2A18166ACD3DC2585392286E5CEEE80AEEBDD7F139BEF0F1713416C50532DC",
     "files":  [
                   {
                       "path":  "clickonce/Application Files/XKey_1_0_3_0/DeviceId.dll.deploy",
@@ -168,7 +180,7 @@
                   },
                   {
                       "path":  "clickonce/Application Files/XKey_1_0_3_0/ja/XKey.resources.dll.deploy",
-                      "sha256":  "92F30F4A4287213AD796134B82F30C968693A2BE0321C6BE1518D07A665392EC",
+                      "sha256":  "B57CC4CCD4DDF308B39A36744773120360F56966AD618FCE063793327823BB2B",
                       "length":  55296
                   },
                   {
@@ -428,8 +440,8 @@
                   },
                   {
                       "path":  "clickonce/Application Files/XKey_1_0_3_0/secrets.config.deploy",
-                      "sha256":  "8160D627026EB8884F19EC5D306EBEA8FF4BBB2427C52BB1B1D4F8449762FF91",
-                      "length":  245
+                      "sha256":  "06623986886DB5AB3B0CCAF7A81698FB59D145C86EEB99E9CC38EA532B79B573",
+                      "length":  250
                   },
                   {
                       "path":  "clickonce/Application Files/XKey_1_0_3_0/Sentry.dll.deploy",
@@ -548,73 +560,73 @@
                   },
                   {
                       "path":  "clickonce/Application Files/XKey_1_0_3_0/XKey.dll.deploy",
-                      "sha256":  "5637A32609CFE72F383E3631C72FE050EAAC89132F64716EE6F23E734E1F7DE0",
-                      "length":  9320448
+                      "sha256":  "08431175B939FE06B9BFEC89088565713A88676292A000EA2A9D462EC2192B0F",
+                      "length":  9326080
                   },
                   {
                       "path":  "clickonce/Application Files/XKey_1_0_3_0/XKey.dll.manifest",
-                      "sha256":  "4DE3CAADF911ACD4D56269BCECEA54104212BD0A6EC99CD6AE7224AAD99BBD2E",
-                      "length":  71735
+                      "sha256":  "82EBAEFFB6A57A1EC3C2FA9F5B4073BA38788678B78FAE3B72A8829B59F067D5",
+                      "length":  71731
                   },
                   {
                       "path":  "clickonce/Application Files/XKey_1_0_3_0/XKey.vsto",
-                      "sha256":  "33489CA6CE57DCE625D7FF89110E59E41998FF3DD6C26234D1E054AE0D882DDD",
-                      "length":  18965
+                      "sha256":  "E97FD2BD293FFAA72F13208511EAAEE8F39FC50B52DAB634D49EA2CDE704AFC0",
+                      "length":  18969
                   },
                   {
                       "path":  "clickonce/setup.exe",
-                      "sha256":  "D9C1FBF5DEEE1F8106FFDE506F9E04111B255013CE436F00E5AAF47D8D0DA931",
+                      "sha256":  "D75EDD135C48F2F7A946BB467A6F5CEA76CB6A422F4567C995FDAED7D06A4629",
                       "length":  1118120
                   },
                   {
                       "path":  "clickonce/XKey.vsto",
-                      "sha256":  "33489CA6CE57DCE625D7FF89110E59E41998FF3DD6C26234D1E054AE0D882DDD",
-                      "length":  18965
+                      "sha256":  "E97FD2BD293FFAA72F13208511EAAEE8F39FC50B52DAB634D49EA2CDE704AFC0",
+                      "length":  18969
                   },
                   {
                       "path":  "enterprise/DEPLOYMENT.md",
-                      "sha256":  "F47BE19774D40185F8D89D1C57336EF356DD83911F6673FE436053BFA2941264",
-                      "length":  6575
+                      "sha256":  "9559461A2FE10B591E4969BAAAEE2FE85A81CB15B41C4705083C9CD25FFD81BF",
+                      "length":  9327
                   },
                   {
                       "path":  "enterprise/Detect-XKey.ps1",
-                      "sha256":  "4C5EC6378ABB8A31E7344A124332CAF86793F16D1C2DB9618AC7D0AD863D9DB7",
-                      "length":  18417
+                      "sha256":  "A706B240B2EF6831EF4B19F279F1FCED1A3B516C89B5144B511EAE8A7F99E1F2",
+                      "length":  19259
                   },
                   {
                       "path":  "enterprise/Install-XKey.ps1",
-                      "sha256":  "0B2DE8283A91F9DED5D37A3EAA32B11B9AF00EBFCECACDA266832976716D8A77",
-                      "length":  15157
+                      "sha256":  "AD3C9D205F4DE86429B164111BE46B5AA2D9167BEF3A57E838E01CA10DEDA96E",
+                      "length":  15418
                   },
                   {
                       "path":  "enterprise/Migrate-XKeyClickOnce.ps1",
-                      "sha256":  "4A7976B7A38DB745F377F3F12D6E7C9A1F4CE861BBFF5FDDB6C30C0B3E2BEA34",
-                      "length":  17050
+                      "sha256":  "B18B738468B42925790BBA23CB2A1CDDBA0F7888F765EE882298F3ECF6D50E41",
+                      "length":  17081
                   },
                   {
                       "path":  "enterprise/release.json",
-                      "sha256":  "94DDF539B81DD9A92CE9617B19078B269E4020D88824068418C395185BA36FB2",
-                      "length":  6035
+                      "sha256":  "C7EB38D234E78BCAF9A9A163031EA4DC6E48FF5938684A5D957AC25BEC81EFD2",
+                      "length":  6514
                   },
                   {
                       "path":  "enterprise/Uninstall-XKey.ps1",
-                      "sha256":  "CAC1B47E90C595DA41D9BF49CE21DD8F6817828F12C5FB3700821A6EA5EBB1B1",
-                      "length":  14661
+                      "sha256":  "676473606CA19A77810B7DF9F2567A647A0AC81BDC9EEF4F310B296B8D6D84FD",
+                      "length":  14674
                   },
                   {
                       "path":  "enterprise/XKey.Deployment.psm1",
-                      "sha256":  "7526A1F04DBF0E820BD77B71B4ECEDAF6F04766CC987EC214CC78A70764F816D",
-                      "length":  22228
+                      "sha256":  "3183FE1C24DA80AA5992FDE18034804A84C5E4BC72C2B50F945C956C856138BB",
+                      "length":  23453
                   },
                   {
-                      "path":  "enterprise/XKey-1.0.3-x64.msi",
-                      "sha256":  "B931E1659E13B38070A305FA58E393AADD28E49164D83137F1BB74194CD169EC",
-                      "length":  11554816
+                      "path":  "enterprise/XKey-1.0.3-Intune-x64.msi",
+                      "sha256":  "19780D68DDC905FA08AE12E1BB27F1D0FA1689F8C5D7A121882877EBFEA084F7",
+                      "length":  11558912
                   },
                   {
-                      "path":  "intunewin/XKey-1.0.3-x64.intunewin",
-                      "sha256":  "AD28E887D04ED9F12D77D99746E40FFEEADCE672C56C06C978FE2DF54AAB07F2",
-                      "length":  11335731
+                      "path":  "intunewin/XKey-1.0.3-Intune-x64.intunewin",
+                      "sha256":  "50D577DB63493EAE2FAE1FF398779C9167E74CC478DA5B92D444AA58A69E436F",
+                      "length":  11340778
                   },
                   {
                       "path":  "payload/DeviceId.dll",
@@ -638,7 +650,7 @@
                   },
                   {
                       "path":  "payload/ja/XKey.resources.dll",
-                      "sha256":  "92F30F4A4287213AD796134B82F30C968693A2BE0321C6BE1518D07A665392EC",
+                      "sha256":  "B57CC4CCD4DDF308B39A36744773120360F56966AD618FCE063793327823BB2B",
                       "length":  55296
                   },
                   {
@@ -898,8 +910,8 @@
                   },
                   {
                       "path":  "payload/secrets.config",
-                      "sha256":  "8160D627026EB8884F19EC5D306EBEA8FF4BBB2427C52BB1B1D4F8449762FF91",
-                      "length":  245
+                      "sha256":  "06623986886DB5AB3B0CCAF7A81698FB59D145C86EEB99E9CC38EA532B79B573",
+                      "length":  250
                   },
                   {
                       "path":  "payload/Sentry.dll",
@@ -1013,8 +1025,8 @@
                   },
                   {
                       "path":  "payload/XKey.dll",
-                      "sha256":  "5637A32609CFE72F383E3631C72FE050EAAC89132F64716EE6F23E734E1F7DE0",
-                      "length":  9320448
+                      "sha256":  "08431175B939FE06B9BFEC89088565713A88676292A000EA2A9D462EC2192B0F",
+                      "length":  9326080
                   },
                   {
                       "path":  "payload/XKey.dll.config",
@@ -1023,13 +1035,48 @@
                   },
                   {
                       "path":  "payload/XKey.dll.manifest",
-                      "sha256":  "4DE3CAADF911ACD4D56269BCECEA54104212BD0A6EC99CD6AE7224AAD99BBD2E",
-                      "length":  71735
+                      "sha256":  "82EBAEFFB6A57A1EC3C2FA9F5B4073BA38788678B78FAE3B72A8829B59F067D5",
+                      "length":  71731
                   },
                   {
                       "path":  "payload/XKey.vsto",
-                      "sha256":  "7EB058D8C22475A696E07BFA5C6719EC92E9425067B0135084AE38AE4D3362D5",
-                      "length":  18864
+                      "sha256":  "CB545A0D13DD3F0546B8DB706A78B6BA45FC482031AEB837AB2E95F9F45E7403",
+                      "length":  18868
+                  },
+                  {
+                      "path":  "standalone/update-manifest.json",
+                      "sha256":  "391064645C982E855239BD4A4136927A29413E7242CFD0175F18CD02830D8620",
+                      "length":  490
+                  },
+                  {
+                      "path":  "standalone/update-manifest.preview.json",
+                      "sha256":  "391064645C982E855239BD4A4136927A29413E7242CFD0175F18CD02830D8620",
+                      "length":  490
+                  },
+                  {
+                      "path":  "standalone/update-manifest.stable.json",
+                      "sha256":  "45225FEA63AA0400CCA316E593F8D0F6272C6DBF9F660DC112B39CF06D91631F",
+                      "length":  489
+                  },
+                  {
+                      "path":  "standalone/updater/updater-policy.json",
+                      "sha256":  "E582E7EA7476353F5ADF0475E67BDF25FEAFE1A3D66335EB1C44454693BC0BAC",
+                      "length":  348
+                  },
+                  {
+                      "path":  "standalone/updater/XKey.Updater.exe",
+                      "sha256":  "697A200049F68C7A79AFBCEE78EBFBFCBAF7D8D31C7D63BF9D227A1E9F6C2390",
+                      "length":  62376
+                  },
+                  {
+                      "path":  "standalone/updater/XKey.Updater.exe.config",
+                      "sha256":  "051099983B896673909E01A1F631B6652ABB88DA95C9F06F3EFEF4BE033091FA",
+                      "length":  174
+                  },
+                  {
+                      "path":  "standalone/XKey-1.0.3-Standalone-x64.msi",
+                      "sha256":  "A79E090E031109313E420D292AD091D0648CD96BAB7ABF757C953AD0F5ADAE93",
+                      "length":  11587584
                   }
               ]
 }

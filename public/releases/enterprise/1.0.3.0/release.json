@@ -1,12 +1,27 @@
 ﻿{
     "version":  "1.0.3.0",
+    "packageRevision":  2,
     "msiVersion":  "1.0.3",
-    "productCode":  "{042C6E76-5F2E-2CA2-BBE9-473FAD1A3727}",
+    "productCode":  "{B317B666-4A9A-DB91-059A-30525F22A1FB}",
     "upgradeCode":  "17A6CA17-29A4-4485-9AFA-60647FE0A33C",
     "minimumWebViewVersion":  "154.0.4258.31",
-    "msi":  "XKey-1.0.3-x64.msi",
-    "msiSha256":  "B931E1659E13B38070A305FA58E393AADD28E49164D83137F1BB74194CD169EC",
-    "sourceCommit":  "7f10a2833492d1b929baaa9e443c68c7fc04f51d",
+    "msi":  "XKey-1.0.3-Intune-x64.msi",
+    "msiSha256":  "19780D68DDC905FA08AE12E1BB27F1D0FA1689F8C5D7A121882877EBFEA084F7",
+    "distribution":  "Intune",
+    "updaterActivationReady":  true,
+    "productionVerified":  false,
+    "updaterProtocol":  1,
+    "standalone":  {
+                       "version":  "1.0.3.0",
+                       "msiVersion":  "1.0.3",
+                       "productCode":  "{2F8CFA95-8C8E-C637-7651-2842A3A96EBC}",
+                       "upgradeCode":  "17A6CA17-29A4-4485-9AFA-60647FE0A33C",
+                       "minimumWebViewVersion":  "154.0.4258.31",
+                       "distribution":  "Standalone",
+                       "msi":  "XKey-1.0.3-Standalone-x64.msi",
+                       "msiSha256":  "A79E090E031109313E420D292AD091D0648CD96BAB7ABF757C953AD0F5ADAE93"
+                   },
+    "sourceCommit":  "ee422b5a4127b81a7b3ee612e3c83ee5f44e27c1",
     "sourceDirty":  false,
     "signed":  true,
     "installUrl":  "https://resources.infiniticlips.com/releases/preview/bin/",
@@ -141,8 +156,5 @@
                      }
                  ],
     "wixVersion":  "7.0.0",
-    "validation":  "Local package validation only; VM and Intune pilot pending.",
-    "applicationSourceCommit":  "b7eba9fe3cf24ecdb17569ad163c28fbbfd5a9a9",
-    "applicationReleaseManifestSha256":  "36B9F1E0DFEE0D96FFDFDE9EBB60DB1202BA77F23E0F828810BEABF6E59D814D",
-    "reissueOfMsiSha256":  "8A2A18166ACD3DC2585392286E5CEEE80AEEBDD7F139BEF0F1713416C50532DC"
+    "validation":  "Local package validation only; VM and Intune pilot pending."
 }
