@@ -17,3 +17,6 @@ Existing public/releases/preview and public/releases/latest content and the reso
 The private application repository supplies Build, Validate, Publish and StageClickOnce commands. StageClickOnce copies only ClickOnce after validation; it does not commit, push or publish GitHub assets. Local checkout folders may retain the old xkey-resources-next name even though origin points to xkey-releases.
 
 Use the existing frozen pnpm lockfile for site builds. Keep framework upgrades separate. Verify ClickOnce hashes and live URLs when deploying site cleanup.
+## Next release acceptance
+
+Use the [next-release test plan](NEXT-RELEASE-TEST.md) to test a 1.0.5.0 Standalone baseline against the next prerelease, including startup discovery, installer handoff and cancellation. Published assets must never be replaced to repeat a test.

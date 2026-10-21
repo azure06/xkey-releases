@@ -1,11 +1,27 @@
-# Introduction
- 
-Welcome to Infiniti | XKey! This is a basic docs template. You can use it as a starting point for your own project :)
+# XKey for PowerPoint
 
-## What is Infiniti | XKey?
+Download XKey, choose the right installation package, and understand how updates are delivered.
 
-A **simple**, **powerful** and **flexible** site generation framework with everything you love from Next.js.
+[**Browse GitHub Releases →**](https://github.com/azure06/xkey-releases/releases)
 
-## Documentation
+## Choose your installation
 
-The documentation is available at [https://resources.infiniticlips.com](https://resources.infiniticlips.com.
+| Distribution | Use it when | Update owner |
+| --- | --- | --- |
+| **Standalone** | You install XKey yourself and can approve administrator prompts | XKey's bundled updater |
+| **Intune** | Your company manages installation and updates | Your IT team |
+| **ClickOnce** | You already use the legacy ClickOnce installation | Its existing ClickOnce channel |
+
+Standalone and Intune cannot coexist. If your company manages XKey, follow its installation instructions.
+
+Start with the [installation guide](/installation). IT administrators can use the [enterprise guide](/enterprise). Testers can read about [update channels and testing](/updates).
+
+## Existing Standalone testers
+
+Version **1.0.5.0** moves update discovery and downloads to GitHub. Install its Standalone MSI manually once when coming from 1.0.3.0 or 1.0.4.0. Older helpers cannot discover this cutover because the previous website feed has been removed.
+
+Fresh Standalone installations use **Stable** updates and the **Production** application backend. A prerelease does not automatically opt your machine into Preview.
+
+## Existing ClickOnce users
+
+Existing ClickOnce files and installation URLs remain available. GitHub release publication and promotion do not change ClickOnce. Coordinate migration to an MSI with your administrator to avoid conflicting installations.

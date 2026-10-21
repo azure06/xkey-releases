@@ -1,7 +1,8 @@
 {
   "name": "xkey-releases",
   "version": "0.0.1",
-  "description": "Resources for XKey",
+  "description": "XKey for PowerPoint releases and documentation",
+  "packageManager": "pnpm@8.15.9",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "18.11.10",
+    "@types/react": "18.0.25",
     "typescript": "^4.9.3"
   }
 }

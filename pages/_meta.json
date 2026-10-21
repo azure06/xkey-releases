@@ -1,15 +1,13 @@
 {
-  "index": "Introduction",
-  "advanced": "Advanced",
-  "code": "Code",
-  "about": {
-    "title": "About",
-    "type": "page"
-  },
-  "contact": {
-    "title": "Contact ↗",
+  "index": "Overview",
+  "installation": "Installation",
+  "updates": "Updates and testing",
+  "enterprise": "Enterprise deployment",
+  "about": { "title": "About", "type": "page" },
+  "releases": {
+    "title": "Downloads ↗",
     "type": "page",
-    "href": "https://x.com/_azure06",
+    "href": "https://github.com/azure06/xkey-releases/releases",
     "newWindow": true
   }
 }

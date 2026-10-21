@@ -1,0 +1,25 @@
+# Enterprise deployment
+
+Use the **Intune** distribution for IT-managed installations. It contains no Standalone self-updater: your IT team approves and deploys each version.
+
+## Release downloads
+
+Each [GitHub release](https://github.com/azure06/xkey-releases/releases) supplies an Intune MSI, an Intune ZIP containing signed management scripts, a `.intunewin` upload container, and a `DEPLOYMENT.md` guide. Use the files from the same release together.
+
+The deployment guide is the authority for exact commands, runtime requirements, detection, return codes, migration and supersedence. Read it before importing the package.
+
+## Rollout outline
+
+1. Install machine-wide prerequisites as separate managed dependencies.
+2. Identify existing MSI and per-user ClickOnce installations. Run ClickOnce migration in each affected user's context before assigning the machine installation.
+3. Import the `.intunewin` as a Windows Win32 app with System installation behavior.
+4. Configure the supplied install/uninstall commands and custom detection script from the release guide.
+5. Pilot on disposable devices before expanding the assignment. IT retains ownership of subsequent updates.
+
+Standalone and Intune cannot coexist. Deliberately changing distribution requires administrator-controlled migration; do not use the Standalone updater to manage Intune installations.
+
+## Validation status
+
+Automated package, signature and updater checks are recorded in each release's `validation-report.json`. They do not prove Office installation lifecycle behavior or Intune compatibility. A Windows/Office lifecycle test and a real Intune pilot remain separate acceptance checks.
+
+Directly running the MSI can validate a manual installation. It does not validate SYSTEM context, Intune detection, retry reporting or supersedence.

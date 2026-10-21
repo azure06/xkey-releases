@@ -1,0 +1,45 @@
+# Updates and preview testing
+
+## Two independent choices
+
+The **application environment** chooses which backend XKey opens. The **update channel** chooses which desktop releases the Standalone updater offers. Changing one does not change the other. Defaults are Production and Stable; there are no selection dialogs.
+
+The release's `runtime-configuration.md` documents manual developer configuration. Preview testing does not require switching away from the Production backend.
+
+## Stable and Preview
+
+Stable uses GitHub's Latest published full release. Preview considers published prereleases and full releases and selects the highest valid application version. Both use the public [azure06/xkey-releases repository](https://github.com/azure06/xkey-releases/releases).
+
+Only newer versions are offered. Equal versions and downgrades are skipped. If no full Stable release exists, there is no published Stable update to offer.
+
+Automatic checks occur when PowerPoint starts, at most once every six hours per user and channel. Network failures and GitHub rate limits leave the installed application intact.
+
+## Test a prerelease
+
+Use a disposable Windows VM with desktop PowerPoint where possible. Install the previous GitHub-compatible Standalone version, then run this from PowerShell to opt that machine into Preview:
+
+```powershell
+& 'C:\Program Files\Infiniti XKey for PowerPoint\Updater\XKey.Updater.exe' --configure-channel preview
+```
+
+Approve the administrator prompt. To check immediately without waiting for the startup timer:
+
+```powershell
+& 'C:\Program Files\Infiniti XKey for PowerPoint\Updater\XKey.Updater.exe' --update
+```
+
+`--check` checks availability without downloading. `--prepare` downloads and verifies without installing. `--status` reports activation and channel. Manual checks still respect GitHub rate-limit backoff.
+
+After accepting an offer, **leave the updater open and close every PowerPoint window**. Approve the Windows administrator prompt. **Postpone cancels this attempt**; it does not schedule an automatic installation for later.
+
+Reopen PowerPoint and confirm the new version, sign-in, panes and saved settings. Restore Stable using `--configure-channel stable` after testing if desired. This does not downgrade an already installed prerelease.
+
+## Logs
+
+User-side diagnostics: `%LOCALAPPDATA%\Infiniti\XKey\Updates\updater.log`.
+
+Installation diagnostics: `%ProgramData%\Infiniti\XKey\Updates\<job>\install.log` and `result.txt`. An administrator can inspect protected job folders. Review logs for private information before sharing them.
+
+## Promotion
+
+After testing, the maintainer clears the prerelease flag and marks that release Latest in GitHub. The same signed assets then become available to Stable clients, without rebuilding. Intune and ClickOnce retain their separate update processes.
