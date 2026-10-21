@@ -2,11 +2,11 @@
     "schema":  1,
     "distribution":  "Standalone",
     "channel":  "preview",
-    "version":  "1.0.3.0",
-    "msiVersion":  "1.0.3",
-    "url":  "https://resources.infiniticlips.com/releases/standalone/1.0.3.0/XKey-1.0.3-Standalone-x64.msi",
-    "sha256":  "A79E090E031109313E420D292AD091D0648CD96BAB7ABF757C953AD0F5ADAE93",
+    "version":  "1.0.4.0",
+    "msiVersion":  "1.0.4",
+    "url":  "https://resources.infiniticlips.com/releases/standalone/1.0.4.0/XKey-1.0.4-Standalone-x64.msi",
+    "sha256":  "CE6341F189F7539D5E87713EF23773CF0C2015573DCF796144B3AFF5DFDA7E9E",
     "size":  11587584,
-    "productCode":  "{2F8CFA95-8C8E-C637-7651-2842A3A96EBC}",
+    "productCode":  "{3D5C1804-68A0-6D59-8646-8968D3F33AC1}",
     "upgradeCode":  "17A6CA17-29A4-4485-9AFA-60647FE0A33C"
 }

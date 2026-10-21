@@ -6,8 +6,8 @@ stable/latest promotion separate from preview endpoint publication.
 
 | Repository location | Public endpoint | Purpose |
 | --- | --- | --- |
-| `public/releases/enterprise/1.0.3.0/` | `/releases/enterprise/1.0.3.0/...` | IT-managed MSI, Intune scripts and upload container |
-| `public/releases/standalone/1.0.3.0/` | `/releases/standalone/1.0.3.0/...` | Immutable signed Standalone MSI and release evidence |
+| `public/releases/enterprise/1.0.4.0/` | `/releases/enterprise/1.0.4.0/...` | IT-managed MSI, Intune scripts and upload container |
+| `public/releases/standalone/1.0.4.0/` | `/releases/standalone/1.0.4.0/...` | Immutable signed Standalone MSI and release evidence |
 | `public/updates/standalone/preview.json` | `/updates/standalone/preview.json` | Mutable preview update manifest |
 | `public/updates/standalone/stable.json` | `/updates/standalone/stable.json` | Mutable stable update manifest |
 
@@ -64,3 +64,7 @@ requires canonical-host HTTPS smoke checks after deliberate publication.
 ## Withdrawn preview replacement
 
 The owner withdrew the GitHub releases and authorized restarting at 1.0.3.0, replacing the existing resources preview. This is an explicit exception to version immutability for this private preview. Existing 1.0.3.0 testers must download the replacement GitHub MSI and install it manually once; equal versions do not trigger an offer. Uninstall withdrawn 1.0.4.0/1.0.5.0 before installing 1.0.3.0. Future public versions must increase normally. Production and Stable remain the fresh-install defaults; Preview is manually configured.
+
+## Current Preview upgrade test
+
+1.0.4.0 is published after the corrected 1.0.3.0 baseline to exercise Standalone auto-updating. Both versioned packages remain available. Only the Preview feed and Preview ClickOnce deployment advance; Stable/latest are unchanged. The updater reads the JSON and downloads its MSI here. GitHub Releases carries matching manual downloads and verification evidence, not the update feed.
